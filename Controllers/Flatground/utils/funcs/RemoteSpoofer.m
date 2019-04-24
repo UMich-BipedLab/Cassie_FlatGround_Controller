@@ -30,7 +30,7 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
                 RadioButton.SBA = 1;
             end
             if t>8
-                RadioButton.LVA = 1;
+                RadioButton.LVA = 0;
             end
             RadioButton.LSA = median([-1,t-0.5-1,1]);
             cassieOutputs.pelvis.radio.channel = RadioButtonToChannel(RadioButton);

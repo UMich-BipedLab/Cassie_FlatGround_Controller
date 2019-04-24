@@ -34,8 +34,6 @@ c_Kd_toe_stand = 80;
 c_Kp_lateral_stand = 2;
 c_Kd_lateral_stand = 0.025;
 
-
-
 % filters
 c_fil_para_x = 0.002;
 c_fil_para_y = 0.002;
@@ -51,13 +49,14 @@ c_u_thigh_cp = +YToolkits.ifelse(isSim,-10,-15);
 c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 % footplacment
 c_Kfs_p = 0.1;
-c_Kfs_d = 0.25;
+c_Kfs_d = 0.45;
+
+c_Kfl_p = +YToolkits.ifelse(isSim,0.25,0.25);
 c_Kfl_d = 0.35;
-c_Kfl_p = +YToolkits.ifelse(isSim,0.4,0.4);
 % offset
 c_sagittal_offset_exp = -0.04;
-c_lateral_offset_exp = 0.01;
-c_turning_offset_exp = -0.02;
+c_lateral_offset_exp = 0.0045;
+c_turning_offset_exp = 0;
 c_stand_offset_exp = 0.01;
 
 % Switch from stand to walk
@@ -78,7 +77,6 @@ c_joint_filter_choice = 1; % Mikhail's filter is 0
 c_standing_switch_time = 0.4;
 
 c_toe_tilt_angle = 0.3;  % [rad] ~ 17.2 deg
-
 c_force_step_end_s = 1.1;
 
 

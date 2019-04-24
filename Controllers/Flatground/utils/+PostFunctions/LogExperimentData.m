@@ -22,9 +22,9 @@ SimulinkRealTime.copyFileToHost(tg, ['DATA.dat'])
 DataMatrix = SimulinkRealTime.utils.getFileScopeData('DATA.dat');
 DataBusSelectorName = 'Data Bus Selector';
 
-
-% mdl = char(tg.Application);
-mdl = 'Yukai_Controller_Block';
+%
+mdl = char(tg.Application);
+% mdl = 'FG_RealTime.slx';
 sys = get_param(mdl, 'Handle');
 BusSelectors = find_system(sys,'FollowLinks','on','SearchDepth',10,'BlockType','BusSelector');
 
@@ -90,4 +90,4 @@ log.description.DateTime = user_input{1};
 log.description.Setup = user_input{2};
 log.description.Results = user_input{3};
 save('Log', 'log')
-cd(root_dir);
+% cd(root_dir);
