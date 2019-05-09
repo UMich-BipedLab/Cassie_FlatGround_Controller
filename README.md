@@ -15,6 +15,7 @@ The details of the controller’s design and implementation are explained in: �
  
 
 ## Running the controller in Simulink simulation:
+0. Use MATLAB 2017b. If you use MATLAB 2018, you need to modify the solver from auto to ode45
 1. Download this repository and execute the script "start_up.m" to add all functions needed to the MATLAB searchable path.
 2. Open “\Controllers\Flatground\FG_Simulator.slx” and run the simulation. This will automatically open Matlab's mechanics explorer and show animations after compiling.
 3. Optional：before doing the parameter tuning on your physical robot, you could play with the control parameters in the simulation. You can open "Controllers\Flatground\utils\+PreFunctions\ParamInit.m” and adjust the parameters there to see how they affect the robot’s closed-loop motion in simulation.
