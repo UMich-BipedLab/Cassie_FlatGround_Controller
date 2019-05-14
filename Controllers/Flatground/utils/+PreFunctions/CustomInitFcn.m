@@ -7,8 +7,8 @@ cassieDataBusInfo = Simulink.Bus.createObject(Data);
 cassieDataBus = eval(cassieDataBusInfo.busName);
 
 % Create GaitLibrary Bus
-GL = load('GaitLibrary_output_v1.mat');  % desired trajectories
-% GL = load('GaitLibrary_output_PD_v3_commaned.mat'); % actual trajectories
+% GL = load('GaitLibrary_output_v1.mat');  % desired trajectories
+GL = load('GL_PD_BO9_COM_v1F.mat'); % actual trajectories
 GaitLibrary = GL.GaitLibrary_output;
 cassieGaitLibraryBusInfo = Simulink.Bus.createObject(GaitLibrary);
 cassieGaitLibraryBus = eval(cassieGaitLibraryBusInfo.busName);

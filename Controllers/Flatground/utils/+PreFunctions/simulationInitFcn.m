@@ -8,8 +8,8 @@ h0_output = [ 0.0045; 0; qthigh0; qknee0; qtoe0; -0.0045; 0; qthigh0; qknee0; qt
 
 
 % Set initial pelvis position and rotation
-pelvisPosition = [0; 0; height0];
-pelvisRotation = Rotation3d().rotZYX([0; 0; 0]).getValue;
+% pelvisPosition = [0; 0; height0];
+% pelvisRotation = Rotation3d().rotZYX([0; 0; 0]).getValue;
 
 % Define initial motor states
 figure;

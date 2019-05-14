@@ -79,6 +79,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         fil_para_5;
         
         force_step_end_s;
+        
+        fil_vel_offset;
     end
     properties (Access = private, Constant)
         TorqueLimits = repmat([112.5;112.5;195.2;195.2;45],[2,1]);
@@ -98,7 +100,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         safe_TorqueLimits = repmat([80;60;80;190;45],[2,1]);
         
         standing_abduction_offset = 0.08;
-        bezier_degree = 5;
+        bezier_degree = 9;
     end
     % PRIVATE PROPERTIES ====================================================
     properties (Access = private)
@@ -119,11 +121,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         t2 = 0;
         s2 = 0; % transition time for walk to stand
         u_prev = zeros(10,1); % u in previous iteration
-        u_last = zeros(10,1);% u in last step 
+        u_last = zeros(10,1); % u in last step 
+        u_fil  = zeros(10,1); % u filtered 
+        
         s_prev = 0;
         s_unsat_prev = 0;
         dqy_b_start = 0;
-        gaitparams = struct( 'HAlpha',zeros(10,6),'ct',0);
+        gaitparams = struct( 'HAlpha',zeros(10,10),'ct',0);
         
         foot_placement = 1;
         pitch_torso_control = 1;
@@ -238,6 +242,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 obj.sagittal_offset = obj.sagittal_offset_exp - 0.02 * RadioButton.S1A;
                 obj.turning_offset = obj.turning_offset_exp;
                 obj.stand_offset = obj.stand_offset_exp + RadioButton.S2A*0.1;
+            else    
+                
+                obj.sagittal_offset = obj.sagittal_offset_exp;
+                
             end 
             % Receive command signal from RC radio
             if RadioButton.LVA < 0 % To prevent walking backward too fast
@@ -432,7 +440,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 end
                 
                 % Get bezier coefficient for gait from Gaitlibrary
-                obj.gaitparams = ControlPolicy( obj, GaitLibrary, obj.dqx_b_fil );
+                obj.gaitparams = ControlPolicy( obj, GaitLibrary, obj.dqx_b_fil + obj.fil_vel_offset );
                 
                 s_unsat = obj.s_unsat_prev + (t - obj.t_prev)*obj.gaitparams.ct;
                 s = min(s_unsat,1.05); % here s indicates the phase, 0 is the beginning of a step and 1 is the end of a step.
@@ -755,7 +763,15 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 userInputs.telemetry(9) = GRF_v(2);
 
                 u = YToolkits.vector_saturate(u,obj.safe_TorqueLimits,-obj.safe_TorqueLimits);
-                userInputs.torque = u;
+                obj.u_fil = YToolkits.first_order_filter(obj.u_fil, u, 1);% alpha = deltaT / RC   0.0003   1/2000/0.05
+                % (0~1) 1 means no filter
+                if t > 4
+                   userInputs.torque = obj.u_fil;
+                else
+                   userInputs.torque = u;
+
+                end   
+                   
                 %% log Data
                 Data.s = s;
                 Data.stanceLeg = obj.stanceLeg;
@@ -873,12 +889,12 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             ct_R = interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi);
             ct_L = interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi);
             if obj.stanceLeg == 1
-                gaitparams.HAlpha = reshape(HAlpha_R,10,6);
+                gaitparams.HAlpha = reshape(HAlpha_R,10,obj.bezier_degree + 1);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/obj.bezier_degree;
                 gaitparams.ct = ct_R;
             else
-                gaitparams.HAlpha = reshape(HAlpha_L,10,6);
+                gaitparams.HAlpha = reshape(HAlpha_L,10,obj.bezier_degree + 1);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/obj.bezier_degree;
                 gaitparams.ct = ct_L;

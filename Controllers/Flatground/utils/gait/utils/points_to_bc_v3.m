@@ -2,7 +2,8 @@ function [ alpha ] = points_to_bc_v3( points,dpoints,tp,M )
 % one row in the points matrix represent a trajectory
 % dpoints is the changing rates of points
 % use least square
-M = 5;
+% M = 5;
+
 n = size(points,1); % how many trajectory
 m = size(points,2); % how many points in one trajectory
 s = linspace(0,1,m);

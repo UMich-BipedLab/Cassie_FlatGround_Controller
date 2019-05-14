@@ -22,22 +22,52 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
         
         function [cassieOutputs] = stepImpl(obj, cassieOutputs,t)
             
+%             RadioButton = RadioChannelToButton(cassieOutputs.pelvis.radio.channel);
+%             if t < 5
+%                 RadioButton.SBA = 0;
+%             end
+%             if t > 5
+%                 RadioButton.SBA = 1;
+%             end
+%             if t>8
+%                 RadioButton.LVA = 0;
+%             end
+%             RadioButton.LSA = median([-1,t-0.5-1,1]);
+%             cassieOutputs.pelvis.radio.channel = RadioButtonToChannel(RadioButton);
+
+
             RadioButton = RadioChannelToButton(cassieOutputs.pelvis.radio.channel);
-            if t < 5
+
+            if t < 1.5
                 RadioButton.SBA = 0;
             end
-            if t > 5
+            if t > 2 % switch to walking
                 RadioButton.SBA = 1;
             end
-            if t>8
-                RadioButton.LVA = 0;
+            if  t<10
+                 RadioButton.LVA = 0; 
+            elseif  t < 20  
+                RadioButton.LVA = 0.5;
+            elseif  t < 30  
+                RadioButton.LVA = 0;     
+            elseif  t < 40  
+                RadioButton.LVA = -0.5;        
+            elseif  t < 50  
+                RadioButton.LVA = 0;   
+            else
+                RadioButton.LVA = 0.5;  
             end
-            RadioButton.LSA = median([-1,t-0.5-1,1]);
+             
+            RadioButton.LSA = 1;
+            
+            if t < 0.5
+                RadioButton.SFA = 0; % InEKF is off
+            else
+                RadioButton.SFA = 1; % InEKF is on
+            end    
             cassieOutputs.pelvis.radio.channel = RadioButtonToChannel(RadioButton);
-%             if t > 163.865
-%                 outputs.radio(10) = 1;
-%             end[
-%             outputs.radio(10) = 1;
+
+
         end % stepImpl
         
         %% Define Outputs

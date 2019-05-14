@@ -1,10 +1,17 @@
 % PD gain on Joints (walk)
+% c_Kp_pitch = 100;
+% c_Kd_pitch = 20;
+% c_Kp_roll = 100;
+% c_Kd_roll = 20;
+% c_Kp_yaw = 200;
+% c_Kd_yaw = 4;
 c_Kp_pitch = 100;
 c_Kd_pitch = 20;
 c_Kp_roll = 100;
 c_Kd_roll = 20;
 c_Kp_yaw = 200;
 c_Kd_yaw = 4;
+
 
 c_Kp_abduction = 400;
 c_Kp_rotation = 200;
@@ -47,21 +54,24 @@ c_u_abduction_swing_cp = 14;
 c_u_abduction_cp = +YToolkits.ifelse(isSim,40,40);
 c_u_thigh_cp = +YToolkits.ifelse(isSim,-10,-15);
 c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
-% footplacment
-c_Kfs_p = 0.1;
-c_Kfs_d = 0.45;
 
-c_Kfl_p = +YToolkits.ifelse(isSim,0.25,0.25);
-c_Kfl_d = 0.35;
+% footplacment
+c_Kfs_p = 0.2;
+c_Kfs_d = 0.4;
+
+c_Kfl_p = 0.35;
+c_Kfl_d = 0.40;
+
+c_fil_vel_offset  = 0;
 % offset
-c_sagittal_offset_exp = -0.04;
-c_lateral_offset_exp = 0.0045;
+c_sagittal_offset_exp = -0.0;
+c_lateral_offset_exp = 0.000;
 c_turning_offset_exp = 0;
-c_stand_offset_exp = 0.01;
+c_stand_offset_exp = 0.00;
 
 % Switch from stand to walk
-c_shift_time = +YToolkits.ifelse(isSim,0.5,0.4);
-c_shift_distance = +YToolkits.ifelse(isSim,0.05,0.045);
+c_shift_time = +YToolkits.ifelse(isSim,0.3,0.4);
+c_shift_distance = +YToolkits.ifelse(isSim,0.030,0.045);
 
 % Switch from walk to stand
 c_final_sw_abduction = 0.15;

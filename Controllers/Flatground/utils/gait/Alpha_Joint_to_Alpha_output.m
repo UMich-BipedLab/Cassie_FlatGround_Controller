@@ -10,7 +10,7 @@ function  [ hd_joint,dhd_joint,hd_output,dhd_output,hd_joint_fit,dhd_joint_fit,h
         [dhd_output(3,j) dhd_output(4,j)] = Forward_Kinematics_v(hd_joint(3,j), hd_joint(4,j), dhd_joint(3,j), dhd_joint(4,j));
         [dhd_output(8,j) dhd_output(9,j)] = Forward_Kinematics_v(hd_joint(8,j), hd_joint(9,j), dhd_joint(8,j), dhd_joint(9,j));
     end
-     alpha_output  = points_to_bc_v3( hd_output,dhd_output,Tp,5 );
+     alpha_output  = points_to_bc_v3( hd_output,dhd_output,Tp,M);
 %     alpha_output=zeros(10,M+1);
 %     alpha_output(:,1) = hd_output(:,1);
 %     alpha_output(:,end) = hd_output(:,end);
