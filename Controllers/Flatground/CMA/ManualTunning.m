@@ -35,14 +35,14 @@
 % c_u_knee_cp = 120;
 
 % footplacment
-c_Kfs_p = 0.60;
-c_Kfs_d = 0.35;
+c_Kfs_p = 0.15;
+c_Kfs_d = 0.45;
 
-c_Kfl_p = 0.35;
-c_Kfl_d = 0.45;
+c_Kfl_p = 0.55;
+c_Kfl_d = 0.65;
 
 
-c_fil_vel_offset  = -0.1;%-0.28;
+c_fil_vel_offset  = 0;%-0.28;
 % offset
 c_sagittal_offset_exp = -0.000;
 c_lateral_offset_exp = 0.0;

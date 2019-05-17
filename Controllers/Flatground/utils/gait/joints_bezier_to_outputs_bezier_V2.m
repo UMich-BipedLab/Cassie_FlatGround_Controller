@@ -9,7 +9,7 @@ check_case = 1; % 1 is output position, 2 is output velocity, 3 is joint positio
 
 % GL = load('GaitLibrary_Omar_3.mat');
 % GL = load('GaitLibrary_v1.mat');
-GL = load('GL_PD_BO9_COM_v1.mat');
+GL = load('GL_PD_BO9_v1.mat');
 
 GL = GL.GaitLibrary;
 GaitLibrary_joint.RightStance.HAlpha = zeros(length(GL),10,M+1);
@@ -21,8 +21,10 @@ for i = 1:length(GL)
     GaitLibrary_joint.RightStance.HAlpha(i,:,:) =  reshape(GL{i}.solution.params{1}.atime,10,M+1);
     GaitLibrary_joint.LeftStance.HAlpha(i,:,:) =  reshape(GL{i}.solution.params{3}.atime,10,M+1);
     GaitLibrary_joint.Desired_Velocity(:,i) = GL{i}.velocity;
-    GaitLibrary_joint.RightStance.ct(i) = 1/GL{i}.solution.params{1}.ptime(1);
-    GaitLibrary_joint.LeftStance.ct(i) = 1/GL{i}.solution.params{3}.ptime(1);
+%     GaitLibrary_joint.RightStance.ct(i) = 1/GL{i}.solution.params{1}.ptime(1);
+%     GaitLibrary_joint.LeftStance.ct(i) = 1/GL{i}.solution.params{1}.ptime(1); 0.8???
+    GaitLibrary_joint.RightStance.ct(i) = 1/0.4;
+    GaitLibrary_joint.LeftStance.ct(i) = 1/0.4;
 end
 
 
@@ -115,52 +117,52 @@ for i = 1:length(GL)
     dhd_joint_fit = StanceLegSwitch(dhd_joint_fit);
     
     
-switch check_case
-    case 1
-        figure(i)
-        for j = 1:10
-            subplot(2,5,j)
-            hold on
-            plot(s,hd_output(j,:))
-            plot(s,hd_output_fit(j,:))
-            hold off
-        end
-        title('output position')
-        set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96])
-    case 2
-        figure(i+9)
-        for j = 1:10
-            subplot(2,5,j)
-            hold on
-            plot(s,dhd_output(j,:))
-            plot(s,dhd_output_fit(j,:))
-            hold off
-        end
-        title('output velocity')
-        set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96])
-    case 3
-        figure(i)
-        for j = 1:10
-            subplot(2,5,j)
-            hold on
-            plot(s,hd_joint(j,:))
-            plot(s,hd_joint_fit(j,:))
-            hold off
-        end
-        title('joint position')
-        set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96])
-    case 4
-        figure(i+9)
-        for j = 1:10
-            subplot(2,5,j)
-            hold on
-            plot(s,dhd_joint(j,:))
-            plot(s,dhd_joint_fit(j,:))
-            hold off
-        end
-        title('joint_velocity')
-        set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96])
-end
+% switch check_case
+%     case 1
+%         figure(i)
+%         for j = 1:10
+%             subplot(2,5,j)
+%             hold on
+%             plot(s,hd_output(j,:))
+%             plot(s,hd_output_fit(j,:))
+%             hold off
+%         end
+%         title('output position')
+%         set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96])
+%     case 2
+%         figure(i+9)
+%         for j = 1:10
+%             subplot(2,5,j)
+%             hold on
+%             plot(s,dhd_output(j,:))
+%             plot(s,dhd_output_fit(j,:))
+%             hold off
+%         end
+%         title('output velocity')
+%         set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96])
+%     case 3
+%         figure(i)
+%         for j = 1:10
+%             subplot(2,5,j)
+%             hold on
+%             plot(s,hd_joint(j,:))
+%             plot(s,hd_joint_fit(j,:))
+%             hold off
+%         end
+%         title('joint position')
+%         set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96])
+%     case 4
+%         figure(i+9)
+%         for j = 1:10
+%             subplot(2,5,j)
+%             hold on
+%             plot(s,dhd_joint(j,:))
+%             plot(s,dhd_joint_fit(j,:))
+%             hold off
+%         end
+%         title('joint_velocity')
+%         set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96])
+% end
 
 
 end
@@ -240,45 +242,45 @@ for i = 1:length(GL)
     
     s = linspace(0,1,length(yaw));
     % plot
-    switch check_case
-        case {1,3}
-            figure(100+i)
-            subplot(1,3,1)
-            hold on
-            plot(s,yaw)
-            plot(s,yaw_fit)
-            hold off
-            subplot(1,3,2)
-            hold on
-            plot(s,pitch)
-            plot(s,pitch_fit)
-            hold off
-            subplot(1,3,3)
-            hold on
-            plot(s,roll)
-            plot(s,roll_fit)
-            hold off
-        case{2,4}
-            figure(109+i)
-            subplot(1,3,1)
-            hold on
-            plot(s,dyaw)
-            plot(s,dyaw_fit)
-            hold off
-            subplot(1,3,2)
-            hold on
-            plot(s,dpitch)
-            plot(s,dpitch_fit)
-            hold off
-            subplot(1,3,3)
-            hold on
-            plot(s,droll)
-            plot(s,droll_fit)
-            hold off
-    end
+%     switch check_case
+%         case {1,3}
+%             figure(100+i)
+%             subplot(1,3,1)
+%             hold on
+%             plot(s,yaw)
+%             plot(s,yaw_fit)
+%             hold off
+%             subplot(1,3,2)
+%             hold on
+%             plot(s,pitch)
+%             plot(s,pitch_fit)
+%             hold off
+%             subplot(1,3,3)
+%             hold on
+%             plot(s,roll)
+%             plot(s,roll_fit)
+%             hold off
+%         case{2,4}
+%             figure(109+i)
+%             subplot(1,3,1)
+%             hold on
+%             plot(s,dyaw)
+%             plot(s,dyaw_fit)
+%             hold off
+%             subplot(1,3,2)
+%             hold on
+%             plot(s,dpitch)
+%             plot(s,dpitch_fit)
+%             hold off
+%             subplot(1,3,3)
+%             hold on
+%             plot(s,droll)
+%             plot(s,droll_fit)
+%             hold off
+%     end
 end
 
 % save('./Controllers/Yukai/mat/GaitLibrary_output/GaitLibrary_output_v1.mat','GaitLibrary_output')
 % save('./Controllers/Yukai/mat/GaitLibrary_output/GaitLibrary_output_Omar_torso_3.mat','GaitLibrary_output')
 
-save('C:\Users\RoahmLab\Documents\GitHub\Cassie_FlatGround_Controller\Controllers\Flatground\mat\GL_PD_BO9_COM_v1F.mat','GaitLibrary_output')
+save('C:\Users\RoahmLab\Documents\GitHub\Cassie_FlatGround_Controller\Controllers\Flatground\mat\GL_PD_BO9_v1F.mat','GaitLibrary_output')

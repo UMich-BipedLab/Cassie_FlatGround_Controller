@@ -526,10 +526,12 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 % fixed at [0;0;0](but torso velocity is not 0). foot position is the toe joint position. IN THE BODY FRAME!
                 [l_foot_v, r_foot_v] = get_feet_velocity(qall,dqall_g);
                 [l_foot_p, r_foot_p] = get_feet_position(qall,dqall_g);
+                
                 r_foot_v = Rz'*r_foot_v;
                 l_foot_v = Rz'*l_foot_v;
                 r_foot_p = Rz'*r_foot_p;
                 l_foot_p = Rz'*l_foot_p;
+                
                 foot_px = [l_foot_p(1); r_foot_p(1)];
                 foot_py = [l_foot_p(2);r_foot_p(2)];
                 foot_pz = [l_foot_p(3); r_foot_p(3)];
@@ -545,9 +547,9 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 
                 
                 % filter the velocity
-                obj.dqx_fil = YToolkits.first_order_filter(obj.dqx_fil,dqx,obj.fil_para_x);
-                obj.dqy_fil = YToolkits.first_order_filter(obj.dqy_fil,dqy,obj.fil_para_y);
-                obj.dqz_fil = YToolkits.first_order_filter(obj.dqz_fil,dqz,obj.fil_para_x);
+                obj.dqx_fil   = YToolkits.first_order_filter(obj.dqx_fil,dqx,obj.fil_para_x);
+                obj.dqy_fil   = YToolkits.first_order_filter(obj.dqy_fil,dqy,obj.fil_para_y);
+                obj.dqz_fil   = YToolkits.first_order_filter(obj.dqz_fil,dqz,obj.fil_para_x);
                 obj.dqx_b_fil = YToolkits.first_order_filter(obj.dqx_b_fil,dqx_b,obj.fil_para_x);
                 obj.dqy_b_fil = YToolkits.first_order_filter(obj.dqy_b_fil,dqy_b,obj.fil_para_y);
                 obj.dqz_b_fil = YToolkits.first_order_filter(obj.dqz_b_fil,dqz_b,obj.fil_para_x);
@@ -886,17 +888,17 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             % Interpolate gaits
             HAlpha_R = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.RightStance.HAlpha, phi);
             HAlpha_L = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.LeftStance.HAlpha, phi);
-            ct_R = interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi);
-            ct_L = interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi);
+            ct_R = 2.5; %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi); 1/0.4
+            ct_L = 2.5; %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi);
             if obj.stanceLeg == 1
-                gaitparams.HAlpha = reshape(HAlpha_R,10,obj.bezier_degree + 1);
+                gaitparams.HAlpha = reshape(HAlpha_R,10, 10);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
-                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/obj.bezier_degree;
+                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/9;
                 gaitparams.ct = ct_R;
             else
-                gaitparams.HAlpha = reshape(HAlpha_L,10,obj.bezier_degree + 1);
+                gaitparams.HAlpha = reshape(HAlpha_L,10, 10);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
-                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/obj.bezier_degree;
+                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/9;
                 gaitparams.ct = ct_L;
             end
         end
