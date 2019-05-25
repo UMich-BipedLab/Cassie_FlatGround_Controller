@@ -47,15 +47,15 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
             if  t<10
                  RadioButton.LVA = 0; 
             elseif  t < 20  
-                RadioButton.LVA = 0.5;
+                RadioButton.LVA = 0;
             elseif  t < 30  
                 RadioButton.LVA = 0;     
             elseif  t < 40  
-                RadioButton.LVA = -0.5;        
+                RadioButton.LVA = -0;        
             elseif  t < 50  
                 RadioButton.LVA = 0;   
             else
-                RadioButton.LVA = 0.5;  
+                RadioButton.LVA = 0;  
             end
              
             RadioButton.LSA = 1;

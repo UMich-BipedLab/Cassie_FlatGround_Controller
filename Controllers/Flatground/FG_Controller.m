@@ -1,7 +1,7 @@
 %Yukai controller.
 
 classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.system.mixin.SampleTime %#codegen
-    % PROTECTED PROPERTIES ====================================================
+    
     properties
         Kp_pitch;
         Kd_pitch;
@@ -81,14 +81,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         force_step_end_s;
         
         fil_vel_offset;
+        
+        CP_StanceKnee;
+        CP_SwingKnee;
+        CP_StanceAbdu;
+        CP_SwingAbdu;
     end
-    properties (Access = private, Constant)
-        TorqueLimits = repmat([112.5;112.5;195.2;195.2;45],[2,1]);
-        ActuatorLimits = [-0.2618, 0.3927;    -0.3927, 0.3927;    -0.8727, 1.3963;    -2.8623, -0.7330;   -2.4435, -0.5236; ...
-            -0.3927, 0.2618;    -0.3927, 0.3927;    -0.8727, 1.3963;    -2.8623, -0.7330;   -2.4435, -0.5236];
-        Ks1 = 1800;
-        Ks2 = 1600;
-    end
+    % PROTECTED PROPERTIES ====================================================
     properties (Access = protected)
  
         sagittal_offset = -0.01;
@@ -100,7 +99,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         safe_TorqueLimits = repmat([80;60;80;190;45],[2,1]);
         
         standing_abduction_offset = 0.08;
-        bezier_degree = 9;
+        bezier_degree = 5;
     end
     % PRIVATE PROPERTIES ====================================================
     properties (Access = private)
@@ -212,6 +211,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         
 
     end % properties
+    properties (Access = private, Constant)
+        TorqueLimits = repmat([112.5;112.5;195.2;195.2;45],[2,1]);
+        ActuatorLimits = [-0.2618, 0.3927;    -0.3927, 0.3927;    -0.8727, 1.3963;    -2.8623, -0.7330;   -2.4435, -0.5236; ...
+            -0.3927, 0.2618;    -0.3927, 0.3927;    -0.8727, 1.3963;    -2.8623, -0.7330;   -2.4435, -0.5236];
+        Ks1 = 1800;
+        Ks2 = 1600;
+    end
     
     % PROTECTED METHODS =====================================================
     methods (Access = protected)
@@ -439,8 +445,9 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     end    
                 end
                 
-                % Get bezier coefficient for gait from Gaitlibrary
-                obj.gaitparams = ControlPolicy( obj, GaitLibrary, obj.dqx_b_fil + obj.fil_vel_offset );
+                % Get bezier coefficient for gait from Gaitlibrary obj.dqx_b_fil + obj.fil_vel_offset 
+                % For zero speed only
+                obj.gaitparams = ControlPolicy( obj, GaitLibrary, obj.dqx_b_fil);
                 
                 s_unsat = obj.s_unsat_prev + (t - obj.t_prev)*obj.gaitparams.ct;
                 s = min(s_unsat,1.05); % here s indicates the phase, 0 is the beginning of a step and 1 is the end of a step.
@@ -598,8 +605,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     obj.hd(sw_abduction) = median([obj.ActuatorLimits(sw_abduction,1) + 0.1,obj.hd(sw_abduction),obj.ActuatorLimits(sw_abduction,2) - 0.1]);
                         
                     % flat the toe ( tilt a little bit)
-                    obj.hd(sw_toe) = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50); % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
-                    obj.hd(sw_toe) = obj.hd(sw_toe) + obj.toe_tilt_angle*s_fast;
+                    obj.hd(sw_toe) = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50) ; % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
+                    obj.hd(sw_toe) = obj.hd(sw_toe) + obj.toe_tilt_angle*s_fast  - 0.2; % Zhenyu: compensate for jumps observed in the experiments
                     obj.dhd(sw_toe) = 0;
                     obj.hd(st_toe) = obj.h0(st_toe);
                     obj.dhd(st_toe) = obj.dh0(st_toe);
@@ -650,18 +657,31 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     
                     % abduction compensation
                     if obj.abduction_com == 1
-                        u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_cp*s_fast;
-                        u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_cp*(1-s_fast);
+%                         u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_cp*s_fast;
+%                         u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_cp*(1-s_fast);
+                        s_CP_stance_abduc = YToolkits.bezier(obj.CP_StanceAbdu,s);
+                        s_CP_swing_abduc = YToolkits.bezier(obj.CP_SwingAbdu,s);
+
+                        u(st_abduction) = u(st_abduction) + abduction_direction*s_CP_stance_abduc;
+                        u(sw_abduction) = u(sw_abduction) - abduction_direction*s_CP_swing_abduc;
+
                     end
-                    if obj.abduction_swing_com == 1
-                        u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_swing_cp*(1-s_fast);
-                        u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_swing_cp*s_fast;
-                    end
-                    u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.uHip_gravity_2*s_fast;
+                    
+%                     if obj.abduction_swing_com == 1
+%                         u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_swing_cp*(1-s_fast);
+%                         u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_swing_cp*s_fast;
+%                     end
+%                     u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.uHip_gravity_2*s_fast;
+                    
+                    
                     % knee compensation
                     if obj.knee_com == 1
-                        u(st_knee) = u(st_knee) + (obj.u_knee_cp)*s_fast*cos(obj.h0(st_thigh));
-                        u(sw_knee) = u(sw_knee) + (obj.u_knee_cp)*(1-s_fast);
+                        %u(st_knee) = u(st_knee) + (obj.u_knee_cp)*s_fast*cos(obj.h0(st_thigh));
+                        % Use a Bezier polynomial for knee precompensation:
+                        s_CP_stance_knee = YToolkits.bezier(obj.CP_StanceKnee,s);
+                        s_CP_swing_knee = YToolkits.bezier(obj.CP_SwingKnee,s);
+                        u(st_knee) = u(st_knee) + s_CP_stance_knee;
+                        u(sw_knee) = u(sw_knee) + s_CP_swing_knee;
                     end
                     % thigh_compensation
                     if obj.thigh_compensation == 1
@@ -880,8 +900,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             % Return the updated Cassie inputs data structure
             
         end % stepImpl
-        %% util functions
         
+        %% util functions
         function gaitparams = ControlPolicy( obj,GaitLibrary, phi)
             % Saturate interpolation value
             phi = clamp(phi, GaitLibrary.Velocity(1,1), GaitLibrary.Velocity(1,end));
@@ -890,15 +910,17 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             HAlpha_L = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.LeftStance.HAlpha, phi);
             ct_R = 2.5; %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi); 1/0.4
             ct_L = 2.5; %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi);
+            Op = 5;
+            
             if obj.stanceLeg == 1
-                gaitparams.HAlpha = reshape(HAlpha_R,10, 10);
+                gaitparams.HAlpha = reshape(HAlpha_R,10, Op+1);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
-                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/9;
+                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/Op;
                 gaitparams.ct = ct_R;
             else
-                gaitparams.HAlpha = reshape(HAlpha_L,10, 10);
+                gaitparams.HAlpha = reshape(HAlpha_L,10, Op+1);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
-                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/9;
+                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/Op;
                 gaitparams.ct = ct_L;
             end
         end
@@ -914,8 +936,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             dqx = v_torso(1);
             dqy = v_torso(2);
             dqz = v_torso(3);
-        end
-        
+        end     
         function [ GRF_L, GRF_R  ] = get_GRF(obj,qall,qsR,qsL,u)
             qall(4) = 0;
             JR = J_RightToeJoint(qall);
@@ -925,15 +946,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             JL_s = JL([1,3],[11,12]);
             GRF_R = (-JR_s')^-1*[Fs1R+Fs2R; Fs2R];
             GRF_L = (-JL_s')^-1*[Fs1L+Fs2L; Fs2L];
-        end
-        
+        end  
         function [Fs1R, Fs2R, Fs1L, Fs2L] = get_spring_force(obj,qsR,qsL)
             Fs1R =- obj.Ks1 * qsR(1);
             Fs2R =- obj.Ks2 * qsR(2);
             Fs1L =- obj.Ks1 * qsL(1);
             Fs2L =- obj.Ks2 * qsL(2);
         end
-        
         function [s_L, s_R] = get_s_LR(obj, GRF_v)
             s_L = (GRF_v(1)-obj.stance_thre_lb)/(obj.stance_thre_ub-obj.stance_thre_lb);
             s_R = (GRF_v(2)-obj.stance_thre_lb)/(obj.stance_thre_ub-obj.stance_thre_lb);
@@ -946,10 +965,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         function [ hd_output, dhd_output] = get_FK(obj, hd_joint,dhd_joint)
             [ hd_output, dhd_output] = get_FK_v1(obj, hd_joint,dhd_joint);
         end
-        function [ hd_joint, dhd_joint] = get_IK(obj, hd_output,dhd_output)
+        function [ hd_joint, dhd_joint]   = get_IK(obj, hd_output,dhd_output)
             [ hd_joint, dhd_joint] = get_IK_v1(obj, hd_output,dhd_output);
         end
-        function [ hd_joint, dhd_joint] = get_IK_v1(obj, hd_output,dhd_output)
+        function [ hd_joint, dhd_joint]   = get_IK_v1(obj, hd_output,dhd_output)
             hd_joint = hd_output;
             dhd_joint = dhd_output;
             hd_output(4) = min(hd_output(4),1.02);
@@ -958,8 +977,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             [hd_joint(8), hd_joint(9)] = Inverse_Kinematics_p(hd_output(8), hd_output(9));
             [dhd_joint(3), dhd_joint(4)] = Inverse_Kinematics_v(hd_output(3), hd_output(4), dhd_output(3), dhd_output(4));
             [dhd_joint(8), dhd_joint(9)] = Inverse_Kinematics_v(hd_output(8), hd_output(9), dhd_output(8), dhd_output(9));
-        end
-        
+        end      
         function [ hd_output, dhd_output] = get_FK_v1(obj, hd_joint,dhd_joint)
             hd_output = hd_joint;
             dhd_output = dhd_joint;

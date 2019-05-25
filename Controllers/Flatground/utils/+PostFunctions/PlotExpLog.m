@@ -46,3 +46,127 @@ set(lg,'visible','off');
 plotbrowser('on')
 
 
+%% Joint left
+close all
+hd_joint = reshape(Data.hd_joint.Data, 10,length(Data.hd_joint.Time));  
+h0_joint = reshape(Data.h0_joint.Data, 10,length(Data.h0_joint.Time));  
+s        = reshape(Data.s.Data, 1,length(Data.s.Time));
+stanceleg = reshape(Data.stanceLeg.Data, 1,length(Data.stanceLeg.Time));
+TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
+
+
+for k = 1:5
+    
+%    figure(k)
+   figure('Position',[k*300,300,800,600])
+   hold on;
+
+
+%    xlim([28,30]);
+   minlim = min([hd_joint(k,round(length(Data.hd_joint.Time)/2):end), h0_joint(k,round(length(Data.hd_joint.Time)/2):end)]);
+   maxlim = max([hd_joint(k,round(length(Data.hd_joint.Time)/2):end), h0_joint(k,round(length(Data.hd_joint.Time)/2):end)]);
+   Ns = s*(maxlim - minlim) + minlim;
+   h1 = plot(Data.s.Time(stanceleg==1),Ns(stanceleg==1),'.','MarkerSize',0.1,'MarkerEdgeColor',[202/256,100/256,73/256],'MarkerFaceColor',[202/256,100/256,73/256]);
+   h2 = plot(Data.s.Time(stanceleg~=1),Ns(stanceleg~=1),'.','MarkerSize',0.1,'MarkerEdgeColor',[0/256,114/256,189/256] ,'MarkerFaceColor',[0/256,114/256,189/256]);
+   plot(Data.hd_joint.Time, hd_joint(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   plot(Data.h0_joint.Time, h0_joint(k,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   ylim([minlim - 0.05, maxlim + 0.05]);
+   legend('right stance','left stance','desired','actual')
+   title(['Joint tracking of left ', TitleNames{k},' motor']);
+   xlabel('Time (sec)');
+   ylabel('Angle (rad)');
+    
+end    
+%% Joint right
+close all
+hd_joint = reshape(Data.hd_joint.Data, 10,length(Data.hd_joint.Time));  
+h0_joint = reshape(Data.h0_joint.Data, 10,length(Data.h0_joint.Time));  
+s        = reshape(Data.s.Data, 1,length(Data.s.Time));
+stanceleg = reshape(Data.stanceLeg.Data, 1,length(Data.stanceLeg.Time));
+TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
+
+
+for k = 6:10
+    
+%    figure(k)
+   figure('Position',[(k-5)*300,300,800,600])
+   hold on;
+
+
+   xlim([28,30]);
+   minlim = min([hd_joint(k,round(length(Data.hd_joint.Time)/2):end), h0_joint(k,round(length(Data.hd_joint.Time)/2):end)]);
+   maxlim = max([hd_joint(k,round(length(Data.hd_joint.Time)/2):end), h0_joint(k,round(length(Data.hd_joint.Time)/2):end)]);
+   Ns = s*(maxlim - minlim) + minlim;
+   h1 = plot(Data.s.Time(stanceleg==1),Ns(stanceleg==1),'.','MarkerSize',0.1,'MarkerEdgeColor',[202/256,100/256,73/256],'MarkerFaceColor',[202/256,100/256,73/256]);
+   h2 = plot(Data.s.Time(stanceleg~=1),Ns(stanceleg~=1),'.','MarkerSize',0.1,'MarkerEdgeColor',[0/256,114/256,189/256] ,'MarkerFaceColor',[0/256,114/256,189/256]);
+   plot(Data.hd_joint.Time, hd_joint(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   plot(Data.h0_joint.Time, h0_joint(k,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   ylim([minlim - 0.05, maxlim + 0.05]);
+   legend('right stance','left stance','desired','actual')
+   title(['Joint tracking of right ', TitleNames{k-5},' motor']);
+   xlabel('Time (sec)');
+   ylabel('Angle (rad)');
+    
+end    
+%% virtual left
+close all
+hd = reshape(Data.hd.Data, 10,length(Data.hd.Time));  
+h0 = reshape(Data.h0.Data, 10,length(Data.h0.Time));  
+s        = reshape(Data.s.Data, 1,length(Data.s.Time));
+stanceleg = reshape(Data.stanceLeg.Data, 1,length(Data.stanceLeg.Time));
+TitleNames = {'Abduction','Yaw','LA','LL','Toe'}; 
+
+
+for k = 3:4
+    
+   figure('Position',[k*300,300,800,600])
+   hold on;
+
+
+
+   minlim = min([hd(k,round(length(Data.hd.Time)/4):round(length(Data.hd.Time)*3/4)), h0(k,round(length(Data.hd.Time)/2):round(length(Data.hd.Time)*3/4))]);
+   maxlim = max([hd(k,round(length(Data.hd.Time)/4):round(length(Data.hd.Time)*3/4)), h0(k,round(length(Data.hd.Time)/2):round(length(Data.hd.Time)*3/4))]);
+   Ns = s*(maxlim - minlim) + minlim;
+   h1 = plot(Data.s.Time(stanceleg==1),Ns(stanceleg==1),'.','MarkerSize',0.1,'MarkerEdgeColor',[202/256,100/256,73/256],'MarkerFaceColor',[202/256,100/256,73/256]);
+   h2 = plot(Data.s.Time(stanceleg~=1),Ns(stanceleg~=1),'.','MarkerSize',0.1,'MarkerEdgeColor',[0/256,114/256,189/256] ,'MarkerFaceColor',[0/256,114/256,189/256]);
+   plot(Data.hd.Time, hd(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   plot(Data.h0.Time, h0(k,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   xlim([28,30]);
+   ylim([minlim, maxlim]);
+   legend('right stance','left stance','desired','actual')
+   title(['Joint tracking of left ', TitleNames{k},' motor']);
+   xlabel('Time (sec)');
+   ylabel('Angle (rad)');
+    
+end    
+
+%% virtual right
+close all
+hd = reshape(Data.hd.Data, 10,length(Data.hd.Time));  
+h0 = reshape(Data.h0.Data, 10,length(Data.h0.Time));  
+s        = reshape(Data.s.Data, 1,length(Data.s.Time));
+stanceleg = reshape(Data.stanceLeg.Data, 1,length(Data.stanceLeg.Time));
+TitleNames = {'Abduction','Yaw','LA','LL','Toe'}; 
+
+
+for k = 3:4
+    
+   figure('Position',[k*300,300,800,600])
+   hold on;
+
+
+   xlim([28,30]);
+   minlim = min([hd(k,round(length(Data.hd.Time)/4):round(length(Data.hd.Time)*3/4)), h0(k,round(length(Data.hd.Time)/2):round(length(Data.hd.Time)*3/4))]);
+   maxlim = max([hd(k,round(length(Data.hd.Time)/4):round(length(Data.hd.Time)*3/4)), h0(k,round(length(Data.hd.Time)/2):round(length(Data.hd.Time)*3/4))]);
+   Ns = s*(maxlim - minlim) + minlim;
+   h1 = plot(Data.s.Time(stanceleg==1),Ns(stanceleg==1),'.','MarkerSize',0.1,'MarkerEdgeColor',[202/256,100/256,73/256],'MarkerFaceColor',[202/256,100/256,73/256]);
+   h2 = plot(Data.s.Time(stanceleg~=1),Ns(stanceleg~=1),'.','MarkerSize',0.1,'MarkerEdgeColor',[0/256,114/256,189/256] ,'MarkerFaceColor',[0/256,114/256,189/256]);
+   plot(Data.hd.Time, hd(k+5,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   plot(Data.h0.Time, h0(k+5,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   ylim([minlim , maxlim ]);
+   legend('right stance','left stance','desired','actual')
+   title(['Joint tracking of right ', TitleNames{k},' motor']);
+   xlabel('Time (sec)');
+   ylabel('Angle (rad)');
+    
+end    

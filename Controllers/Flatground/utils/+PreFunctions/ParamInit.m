@@ -90,6 +90,13 @@ c_toe_tilt_angle = 0.3;  % [rad] ~ 17.2 deg
 c_force_step_end_s = 1.1;
 
 
+c_CP_StanceKnee = [90, 320, -40, -20 20];
+c_CP_SwingKnee  = [0, 0, 0, 0, 0];
+c_CP_StanceAbdu = [0, 40, 20, 30, 0];
+c_CP_SwingAbdu  = [0, -5, 10, 30, -5];
+
+
+
 % S = whos('c_*');
 % if isSim == 1
 %     for i = 1:length(S)

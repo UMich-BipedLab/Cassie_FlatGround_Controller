@@ -7,13 +7,13 @@ options = optimoptions('patternsearch','Display','iter','PlotFcn',@psplotbestf);
 % Find the unconstrained minimum of the objective starting from the point [0,0].
 
 % x0 = [0.35,0.35,0.2,0.4,-0.01,0.035];
-x0 = [ 0.2250    0.3500    0.3156    0.1500    0.6462    0.0350  -0.25];
+x0 = [ 0.15    0.4500    0.55    0.6500];
 
 A = [];
 b = [];
 Aeq = [];
 beq = [];
-lb = [0 0 0 0 -1 0   -0.5 ];
-ub = [1 1 1 1 +1 0.1 +0.5 ];
+lb = [0 0 0 0];
+ub = [1 1 1 1];
 nonlcon = [];
 x = patternsearch(fun,x0,A,b,Aeq,beq,lb,ub,nonlcon,options);

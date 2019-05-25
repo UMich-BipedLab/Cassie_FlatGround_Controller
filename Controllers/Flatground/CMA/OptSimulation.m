@@ -85,7 +85,7 @@
 % c_turning_offset_exp = 0;
 % c_stand_offset_exp = 0.01;
 
- assignin('base','c_sagittal_offset_exp',x0(5)-.6)
+%  assignin('base','c_sagittal_offset_exp',x0(5)-.6)
 % 
 % % Switch from stand to walk
 % c_shift_time = 0.36;
