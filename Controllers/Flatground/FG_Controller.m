@@ -437,6 +437,11 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         obj.u_stance_knee_previous_step = obj.u_stance_knee_current_step;
                         obj.e_stance_knee_previous_step = obj.e_stance_knee_current_step;
                         
+                        % clean current step data structure:
+                        obj.s_current_step = [];
+                        obj.u_stance_knee_current_step = [];
+                        obj.e_stance_knee_current_step = [];
+                        
                     end
                     
                     obj.tp_last = t - obj.t0;
@@ -754,8 +759,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                              u_CP_stance_knee = interp1(obj.s_previous_step + num_diff, obj.u_stance_knee_previous_step, s_int);
                              e_CP_stance_knee = interp1(obj.s_previous_step + num_diff, obj.e_stance_knee_previous_step, s_int + 0.01);
                              
-                             u_CP_stance_knee = clamp(u_CP_stance_knee, -20, 180);
-                             e_CP_stance_knee = clamp(e_CP_stance_knee, -25, 25);
+                             u_CP_stance_knee = clamp(u_CP_stance_knee, -20, 180); % Nm
+                             e_CP_stance_knee = clamp(e_CP_stance_knee, -1, 1); % rad
                              
                              
                         else
