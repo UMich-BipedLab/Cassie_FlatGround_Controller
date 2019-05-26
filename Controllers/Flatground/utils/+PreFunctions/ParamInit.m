@@ -96,6 +96,8 @@ c_CP_StanceAbdu = [0, 40, 20, 30, 0];
 c_CP_SwingAbdu  = [0, -5, 10, 30, -5];
 
 
+c_Gamma_knee = 200;
+
 
 % S = whos('c_*');
 % if isSim == 1
