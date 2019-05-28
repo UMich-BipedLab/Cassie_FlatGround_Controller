@@ -1,0 +1,97 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>RTW Report - doFilter2_initialize.cpp</title>
+<script language="JavaScript" type="text/javascript" src="rtwreport_utils.js"></script>
+<script src="resources/eml_report_loadable_data.js"></script>
+</head>
+<body bgcolor="#eeeeee" onload="try {if (top) { if (top.rtwFileOnLoad) top.rtwFileOnLoad(window.document); else local_onload();}} catch(err) {};">
+<p>
+<table border="0" cellspacing="0" cellpadding="6" width="100%%" height="100%%"><tr><td width="100%%" valign="top" bgcolor="#ffffff">
+<h4>File: <a href="../doFilter2_initialize.cpp" target="rtwreport_document_frame" id="linkToText_plain">doFilter2_initialize.cpp</a></h4>
+<pre id="RTWcode">
+<a name="1"><font color="#888888 "><i>    1   </i></font></a><font color="#117755"><i>//</i></font>
+<a name="2"><font color="#888888 "><i>    2   </i></font></a><font color="#117755"><i>// Academic License - for use in teaching, academic research, and meeting</i></font>
+<a name="3"><font color="#888888 "><i>    3   </i></font></a><font color="#117755"><i>// course requirements at degree granting institutions only.  Not for</i></font>
+<a name="4"><font color="#888888 "><i>    4   </i></font></a><font color="#117755"><i>// government, commercial, or other organizational use.</i></font>
+<a name="5"><font color="#888888 "><i>    5   </i></font></a><font color="#117755"><i>// File: doFilter2_initialize.cpp</i></font>
+<a name="6"><font color="#888888 "><i>    6   </i></font></a><font color="#117755"><i>//</i></font>
+<a name="7"><font color="#888888 "><i>    7   </i></font></a><font color="#117755"><i>// MATLAB Coder version            : 3.4</i></font>
+<a name="8"><font color="#888888 "><i>    8   </i></font></a><font color="#117755"><i>// C/C++ source code generated on  : 28-May-2019 16:42:10</i></font>
+<a name="9"><font color="#888888 "><i>    9   </i></font></a><font color="#117755"><i>//</i></font>
+<a name="10"><font color="#888888 "><i>   10   </i></font></a>
+<a name="11"><font color="#888888 "><i>   11   </i></font></a><font color="#117755"><i>// Include Files</i></font>
+<a name="12"><font color="#888888 "><i>   12   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;rt_nonfinite.h&quot;</font>
+<a name="13"><font color="#888888 "><i>   13   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;doFilter2.h&quot;</font>
+<a name="14"><font color="#888888 "><i>   14   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;doFilter2_initialize.h&quot;</font>
+<a name="15"><font color="#888888 "><i>   15   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;doFilter2_data.h&quot;</font>
+<a name="16"><font color="#888888 "><i>   16   </i></font></a>
+<a name="17"><font color="#888888 "><i>   17   </i></font></a><font color="#117755"><i>// Function Definitions</i></font>
+<a name="18"><font color="#888888 "><i>   18   </i></font></a>
+<a name="19"><font color="#888888 "><i>   19   </i></font></a><font color="#117755"><i>//</i></font>
+<a name="20"><font color="#888888 "><i>   20   </i></font></a><font color="#117755"><i>// Arguments    : void</i></font>
+<a name="21"><font color="#888888 "><i>   21   </i></font></a><font color="#117755"><i>// Return Type  : void</i></font>
+<a name="22"><font color="#888888 "><i>   22   </i></font></a><font color="#117755"><i>//</i></font>
+<a name="23"><font color="#888888 "><i>   23   </i></font></a><font color="#112266"><b>void</b></font> <a name="fcn_doFilter2_initialize">doFilter2_initialize</a>()
+<a name="24"><font color="#888888 "><i>   24   </i></font></a><b>{</b>
+<a name="25"><font color="#888888 "><i>   25   </i></font></a>  <font color="#112266"><b>int</b></font> i;
+<a name="26"><font color="#888888 "><i>   26   </i></font></a>  <font color="#112266"><b>static</b></font> <font color="#112266"><b>const</b></font> <font color="#112266"><b>double</b></font> dv0[16] = <b>{</b> -1.99616346197925, 0.996452021461684,
+<a name="27"><font color="#888888 "><i>   27   </i></font></a>    -1.98925984173658, 0.989547403252102, -1.98285516002368, 0.983141795697362,
+<a name="28"><font color="#888888 "><i>   28   </i></font></a>    -1.977217641326, 0.977503462056666, -1.97257906535629, 0.972864215548143,
+<a name="29"><font color="#888888 "><i>   29   </i></font></a>    -1.96912712676391, 0.969411777953736, -1.96699974562219, 0.967284089284092,
+<a name="30"><font color="#888888 "><i>   30   </i></font></a>    -0.983140587570102, 0.0 <b>}</b>;
+<a name="31"><font color="#888888 "><i>   31   </i></font></a>
+<a name="32"><font color="#888888 "><i>   32   </i></font></a>  <font color="#112266"><b>static</b></font> <font color="#112266"><b>const</b></font> <font color="#112266"><b>signed</b></font> <font color="#112266"><b>char</b></font> iv0[24] = <b>{</b> 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2,
+<a name="33"><font color="#888888 "><i>   33   </i></font></a>    1, 1, 2, 1, 1, 2, 1, 1, 1, 0 <b>}</b>;
+<a name="34"><font color="#888888 "><i>   34   </i></font></a>
+<a name="35"><font color="#888888 "><i>   35   </i></font></a>  <font color="#112266"><b>static</b></font> <font color="#112266"><b>const</b></font> <font color="#112266"><b>double</b></font> dv1[9] = <b>{</b> 7.2139870607604E-5, 7.18903788798391E-5,
+<a name="36"><font color="#888888 "><i>   36   </i></font></a>    7.16589184213885E-5, 7.14551826667048E-5, 7.12875479631187E-5,
+<a name="37"><font color="#888888 "><i>   37   </i></font></a>    7.11627974563878E-5, 7.10859154759187E-5, 0.00842970621494907, 0.0 <b>}</b>;
+<a name="38"><font color="#888888 "><i>   38   </i></font></a>
+<a name="39"><font color="#888888 "><i>   39   </i></font></a>  <font color="#112266"><b>static</b></font> <font color="#112266"><b>const</b></font> <a href="rtwtypes_h.html#type_boolean_T" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'type_boolean_T');" target="_self"><font color="#1122aa">boolean_T</font></a> bv0[9] = <b>{</b> true, true, true, true, true, true, true,
+<a name="40"><font color="#888888 "><i>   40   </i></font></a>    true, false <b>}</b>;
+<a name="41"><font color="#888888 "><i>   41   </i></font></a>
+<a name="42"><font color="#888888 "><i>   42   </i></font></a>  <a href="rt_nonfinite_cpp.html#fcn_rt_InitInfAndNaN" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'fcn_rt_InitInfAndNaN');" target="_self"><font color="#1122aa">rt_InitInfAndNaN</font></a>(8U);
+<a name="43"><font color="#888888 "><i>   43   </i></font></a>
+<a name="44"><font color="#888888 "><i>   44   </i></font></a>  <font color="#117755"><i>//  The following code was used to design the filter coefficients:</i></font>
+<a name="45"><font color="#888888 "><i>   45   </i></font></a>  <font color="#117755"><i>//</i></font>
+<a name="46"><font color="#888888 "><i>   46   </i></font></a>  <font color="#117755"><i>//  Fpass = 5;     % Passband Frequency</i></font>
+<a name="47"><font color="#888888 "><i>   47   </i></font></a>  <font color="#117755"><i>//  Fstop = 10;    % Stopband Frequency</i></font>
+<a name="48"><font color="#888888 "><i>   48   </i></font></a>  <font color="#117755"><i>//  Apass = 1;     % Passband Ripple (dB)</i></font>
+<a name="49"><font color="#888888 "><i>   49   </i></font></a>  <font color="#117755"><i>//  Astop = 80;    % Stopband Attenuation (dB)</i></font>
+<a name="50"><font color="#888888 "><i>   50   </i></font></a>  <font color="#117755"><i>//  Fs    = 2000;  % Sampling Frequency</i></font>
+<a name="51"><font color="#888888 "><i>   51   </i></font></a>  <font color="#117755"><i>//</i></font>
+<a name="52"><font color="#888888 "><i>   52   </i></font></a>  <font color="#117755"><i>//  h = fdesign.lowpass('fp,fst,ap,ast', Fpass, Fstop, Apass, Astop, Fs);</i></font>
+<a name="53"><font color="#888888 "><i>   53   </i></font></a>  <font color="#117755"><i>//</i></font>
+<a name="54"><font color="#888888 "><i>   54   </i></font></a>  <font color="#117755"><i>//  Hd = design(h, 'butter', ...</i></font>
+<a name="55"><font color="#888888 "><i>   55   </i></font></a>  <font color="#117755"><i>//      'MatchExactly', 'stopband', ...</i></font>
+<a name="56"><font color="#888888 "><i>   56   </i></font></a>  <font color="#117755"><i>//      'SystemObject', true);</i></font>
+<a name="57"><font color="#888888 "><i>   57   </i></font></a>  <font color="#117755"><i>// System object Constructor function: dsp.BiquadFilter</i></font>
+<a name="58"><font color="#888888 "><i>   58   </i></font></a>  <a href="doFilter2_data_cpp.html#var_Hd" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'var_Hd');" target="_self"><font color="#1122aa">Hd</font></a>.cSFunObject.P0_ICRTP = 0.0;
+<a name="59"><font color="#888888 "><i>   59   </i></font></a>  <font color="#112266"><b>for</b></font> (i = 0; i &lt; 24; i++) <b>{</b>
+<a name="60"><font color="#888888 "><i>   60   </i></font></a>    <a href="doFilter2_data_cpp.html#var_Hd" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'var_Hd');" target="_self"><font color="#1122aa">Hd</font></a>.cSFunObject.P1_RTP1COEFF[i] = iv0[i];
+<a name="61"><font color="#888888 "><i>   61   </i></font></a>  <b>}</b>
+<a name="62"><font color="#888888 "><i>   62   </i></font></a>
+<a name="63"><font color="#888888 "><i>   63   </i></font></a>  memcpy(&amp;<a href="doFilter2_data_cpp.html#var_Hd" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'var_Hd');" target="_self"><font color="#1122aa">Hd</font></a>.cSFunObject.P2_RTP2COEFF[0], &amp;dv0[0], <font color="#112266"><b>sizeof</b></font>(<font color="#112266"><b>double</b></font>) &lt;&lt; 4);
+<a name="64"><font color="#888888 "><i>   64   </i></font></a>  memcpy(&amp;<a href="doFilter2_data_cpp.html#var_Hd" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'var_Hd');" target="_self"><font color="#1122aa">Hd</font></a>.cSFunObject.P3_RTP3COEFF[0], &amp;dv1[0], 9U * <font color="#112266"><b>sizeof</b></font>(<font color="#112266"><b>double</b></font>));
+<a name="65"><font color="#888888 "><i>   65   </i></font></a>  <font color="#112266"><b>for</b></font> (i = 0; i &lt; 9; i++) <b>{</b>
+<a name="66"><font color="#888888 "><i>   66   </i></font></a>    <a href="doFilter2_data_cpp.html#var_Hd" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'var_Hd');" target="_self"><font color="#1122aa">Hd</font></a>.cSFunObject.P4_RTP_COEFF3_BOOL[i] = bv0[i];
+<a name="67"><font color="#888888 "><i>   67   </i></font></a>  <b>}</b>
+<a name="68"><font color="#888888 "><i>   68   </i></font></a>
+<a name="69"><font color="#888888 "><i>   69   </i></font></a>  <font color="#117755"><i>// System object Initialization function: dsp.BiquadFilter</i></font>
+<a name="70"><font color="#888888 "><i>   70   </i></font></a>  <font color="#112266"><b>for</b></font> (i = 0; i &lt; 1600; i++) <b>{</b>
+<a name="71"><font color="#888888 "><i>   71   </i></font></a>    <a href="doFilter2_data_cpp.html#var_Hd" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'var_Hd');" target="_self"><font color="#1122aa">Hd</font></a>.cSFunObject.W0_FILT_STATES[i] = <a href="doFilter2_data_cpp.html#var_Hd" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'var_Hd');" target="_self"><font color="#1122aa">Hd</font></a>.cSFunObject.P0_ICRTP;
+<a name="72"><font color="#888888 "><i>   72   </i></font></a>  <b>}</b>
+<a name="73"><font color="#888888 "><i>   73   </i></font></a><b>}</b>
+<a name="74"><font color="#888888 "><i>   74   </i></font></a>
+<a name="75"><font color="#888888 "><i>   75   </i></font></a><font color="#117755"><i>//</i></font>
+<a name="76"><font color="#888888 "><i>   76   </i></font></a><font color="#117755"><i>// File trailer for doFilter2_initialize.cpp</i></font>
+<a name="77"><font color="#888888 "><i>   77   </i></font></a><font color="#117755"><i>//</i></font>
+<a name="78"><font color="#888888 "><i>   78   </i></font></a><font color="#117755"><i>// [EOF]</i></font>
+<a name="79"><font color="#888888 "><i>   79   </i></font></a><font color="#117755"><i>//</i></font>
+<a name="80"><font color="#888888 "><i>   80   </i></font></a></pre>
+</td></tr></table>
+</p>
+</body>
+</html>

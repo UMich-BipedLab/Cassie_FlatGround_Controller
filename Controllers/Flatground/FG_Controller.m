@@ -218,9 +218,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         u_stance_knee_previous_step = zeros(1,100);
         e_stance_knee_previous_step = zeros(1,100);
         
-        s_current_step = [];
-        u_stance_knee_current_step  = [];
-        e_stance_knee_current_step  = [];
+        s_current_step = zeros(1,10000);
+        u_stance_knee_current_step  = zeros(1,10000);
+        e_stance_knee_current_step  = zeros(1,10000);
+        kstep = 1;
         
     end % properties
     properties (Access = private, Constant)
@@ -433,14 +434,35 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         %%%%%%%
                         %=====
                         % check initialization:
-                        obj.s_previous_step = obj.s_current_step;
-                        obj.u_stance_knee_previous_step = obj.u_stance_knee_current_step;
-                        obj.e_stance_knee_previous_step = obj.e_stance_knee_current_step;
+
+                        % These signals can be very noisy, apply zero phase
+                        % filter                  
+%                         Uskc = obj.u_stance_knee_current_step;
+%                         Eskc = obj.e_stance_knee_current_step;
+%                         check the length
+% 
+
+                        % corp the data to correct sizes
+                        s_current_step_rs = obj.s_current_step(1:obj.kstep);
+                        u_stance_knee_current_step_rs = obj.u_stance_knee_current_step(1:obj.kstep);
+                        e_stance_knee_current_step_rs = obj.e_stance_knee_current_step(1:obj.kstep);
+                       
+                        % resize the data to a fixed value 1x100
+                        s_interp = linspace(0,s_current_step_rs(end),100);
+                        u_stance_knee_interp = interp1(s_current_step_rs, u_stance_knee_current_step_rs, s_interp);
+                        e_stance_knee_interp = interp1(s_current_step_rs, e_stance_knee_current_step_rs, s_interp);
+
+                        obj.s_previous_step = s_interp;     
+                        % This makes sure the filter always has the same input size
+                        obj.u_stance_knee_previous_step = YToolkits.ZP_filter(u_stance_knee_interp); % 1x100
+                        obj.e_stance_knee_previous_step = YToolkits.ZP_filter(e_stance_knee_interp); % 1x100
+
                         
                         % clean current step data structure:
-                        obj.s_current_step = [];
-                        obj.u_stance_knee_current_step = [];
-                        obj.e_stance_knee_current_step = [];
+                        obj.s_current_step = linspace(0,1,10000);
+                        obj.u_stance_knee_current_step = zeros(1,10000);
+                        obj.e_stance_knee_current_step = zeros(1,10000);
+                        obj.kstep = 1;
                         
                     end
                     
@@ -495,21 +517,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 sendf_b = [ones(1,20),0,0];
                 send_fast = YToolkits.bezier(sendf_b,s);
                 dsend_fast = YToolkits.dbezier(sendf_b,s)*obj.gaitparams.ct;
-                
-                
-                
-                
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                %=======
-                    
-                    
-%                 u_stance_knee_previous_step = [];
-%                 e_stance_knee_previous_step = [];
-%                 u_stance_knee_current_step  = [];
-%                 e_stance_knee_current_step  = [];
-                
-                
-                
+                                
                 % order the index of stance leg and swing leg
                 if obj.stanceLeg == 1 % right stanceleg
                     st_abduction = 6;
@@ -795,9 +803,11 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     %=======
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%
                     %======
-                    obj.e_stance_knee_current_step = [obj.e_stance_knee_current_step, obj.y_joint(st_knee)];
-                    obj.u_stance_knee_current_step = [obj.u_stance_knee_current_step, u(st_knee)];
-                    obj.s_current_step = [obj.s_current_step, s];
+                    obj.e_stance_knee_current_step(obj.kstep) = obj.y_joint(st_knee);
+                    obj.u_stance_knee_current_step(obj.kstep) =  u(st_knee);
+                    obj.s_current_step(obj.kstep) = s;
+                    
+                    obj.kstep = obj.kstep + 1;
                 end
                 
                 
@@ -1104,6 +1114,18 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             [dhd_output(3), dhd_output(4)] = Forward_Kinematics_v(hd_joint(3), hd_joint(4), dhd_joint(3), dhd_joint(4));
             [dhd_output(8), dhd_output(9)] = Forward_Kinematics_v(hd_joint(8), hd_joint(9), dhd_joint(8), dhd_joint(9));
         end
+       
+%         function filtered_data = ZP_filter(obj, data_)
+%                  data_fil_1 = +YToolkits.doFilter( data_);
+%                  data_fil_2 = +YToolkits.doFilter( flip(data_fil_1));
+%                  filtered_data = flip(data_fil_2);
+%         end
+        
+        
+        
+        
+        
+        
         %% Default functions
         function setupImpl(obj)
             %SETUPIMPL Initialize System object.

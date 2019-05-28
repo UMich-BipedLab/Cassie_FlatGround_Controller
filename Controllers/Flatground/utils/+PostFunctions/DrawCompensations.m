@@ -25,3 +25,14 @@ title('stance abduction compensation');
 subplot(2,2,4)
 plot(s*0.4,d_CP_swing_abduc);
 title('swing abduction compensation');
+
+%%
+figure
+hold on
+plot(Data.u_CP_stance_knee)
+plot(Data.e_CP_stance_knee*c_Gamma_knee)
+plot(Data.s*100)
+legend('u','eu','s')
+
+
+Data.stanceLeg
