@@ -33,6 +33,20 @@ plot(Data.u_CP_stance_knee)
 plot(Data.e_CP_stance_knee*c_Gamma_knee)
 plot(Data.s*100)
 legend('u','eu','s')
-
+% plot(Data.u.Time, reshape(Data.u.Data(4,:,:),length(Data.u.Time),1))
+% plot(Data.u.Time, reshape(Data.u.Data(9,:,:),length(Data.u.Time),1))
 
 Data.stanceLeg
+
+%%
+figure(1)
+clf
+plot(u_stance_knee_interp)
+hold on
+plot(filtfilt(b, a, u_stance_knee_interp))
+
+figure(2)
+clf
+plot(u_stance_knee_interp)
+hold on
+plot(filtfilt(b, a, u_stance_knee_interp))

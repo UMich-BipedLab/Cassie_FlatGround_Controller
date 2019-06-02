@@ -233,7 +233,7 @@ Data.u_D = zeros(10,1);
 
 Data.u_CP_stance_knee = 0;
 Data.e_CP_stance_knee = 0;
-
+% Data.u_OT_stance_knee = 0;
 
 Data.computer_time = 0;
 end

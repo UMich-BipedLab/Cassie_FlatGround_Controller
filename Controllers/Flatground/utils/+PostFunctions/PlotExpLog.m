@@ -62,16 +62,16 @@ for k = 1:5
    hold on;
 
 
-%    xlim([28,30]);
+   xlim([10,12]);
    minlim = min([hd_joint(k,round(length(Data.hd_joint.Time)/2):end), h0_joint(k,round(length(Data.hd_joint.Time)/2):end)]);
    maxlim = max([hd_joint(k,round(length(Data.hd_joint.Time)/2):end), h0_joint(k,round(length(Data.hd_joint.Time)/2):end)]);
    Ns = s*(maxlim - minlim) + minlim;
-   h1 = plot(Data.s.Time(stanceleg==1),Ns(stanceleg==1),'.','MarkerSize',0.1,'MarkerEdgeColor',[202/256,100/256,73/256],'MarkerFaceColor',[202/256,100/256,73/256]);
+%    h1 = plot(Data.s.Time(stanceleg==1),Ns(stanceleg==1),'.','MarkerSize',0.1,'MarkerEdgeColor',[202/256,100/256,73/256],'MarkerFaceColor',[202/256,100/256,73/256]);
    h2 = plot(Data.s.Time(stanceleg~=1),Ns(stanceleg~=1),'.','MarkerSize',0.1,'MarkerEdgeColor',[0/256,114/256,189/256] ,'MarkerFaceColor',[0/256,114/256,189/256]);
    plot(Data.hd_joint.Time, hd_joint(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
    plot(Data.h0_joint.Time, h0_joint(k,:),'linewidth',2,'color',[0/256,114/256,189/256]);
    ylim([minlim - 0.05, maxlim + 0.05]);
-   legend('right stance','left stance','desired','actual')
+   legend('left stance','desired','actual')
    title(['Joint tracking of left ', TitleNames{k},' motor']);
    xlabel('Time (sec)');
    ylabel('Angle (rad)');
