@@ -1,4 +1,4 @@
-﻿﻿# Feedback Controller for a Cassie Robot
+# Feedback Controller for a Cassie Robot
 
 This repository uses the Simulator and Realtime Simulink models from Agility Robotics. It contains a MATLAB/Simulink implementation of a basic feedback controller for the bipedal robot Cassie. The controller utilizes virtual constraints and gait libraries and it has been tested on Cassie Blue, Cassie Maize, and Cassie Cal on various terrains including indoor, outdoor environments, and terrains covered with snow, or grass. What you might expect from this basic controller can be found in the following videos:
  
