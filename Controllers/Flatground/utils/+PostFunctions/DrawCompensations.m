@@ -27,17 +27,28 @@ plot(s*0.4,d_CP_swing_abduc);
 title('swing abduction compensation');
 
 %%
+close all
+
 figure
 hold on
 plot(Data.u_CP_stance_knee)
 plot(Data.e_CP_stance_knee*c_Gamma_knee)
 plot(Data.s*100)
-legend('u','eu','s')
+plot(Data.u_OT_stance_knee)
+legend('uCP','euCP','s','u_SK')
 % plot(Data.u.Time, reshape(Data.u.Data(4,:,:),length(Data.u.Time),1))
 % plot(Data.u.Time, reshape(Data.u.Data(9,:,:),length(Data.u.Time),1))
+% xlim([11,12]);
+% Data.stanceLeg
 
-Data.stanceLeg
-
+figure
+hold on
+plot(Data.u_CP_stance_hip_pitch)
+plot(Data.e_CP_stance_hip_pitch*c_Gamma_knee)
+plot(Data.s*20)
+plot(Data.u_OT_stance_hip_pitch)
+legend('uCP','euCP','s','u_SH')
+% xlim([11,12]);
 %%
 figure(1)
 clf
