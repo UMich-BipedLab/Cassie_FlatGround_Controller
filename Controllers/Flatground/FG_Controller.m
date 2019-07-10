@@ -471,44 +471,48 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         % filter                  
 
                         % corp the data to correct sizes
-                        if obj.kstep == 1 % first step switched from standing
-                            s_current_step_rs = linspace(0,1,100);
-                            u_stance_knee_current_step_rs = YToolkits.bezier(obj.CP_StanceKnee, s_current_step_rs);  
-                            e_stance_knee_current_step_rs = zeros(1,100);
-                            
-                            u_stance_hip_pitch_current_step_rs = zeros(1,100);
-                            e_stance_hip_pitch_current_step_rs = zeros(1,100);
-                            
-                            u_stance_abduction_current_step_rs = YToolkits.bezier(obj.CP_StanceAbdu, s_current_step_rs);  
-                            e_stance_abduction_current_step_rs = zeros(1,100);
-                            
-                        else % for the following steps   
-                            s_current_step_rs = obj.s_current_step(1:obj.kstep-1);
-                            u_stance_knee_current_step_rs = obj.u_stance_knee_current_step(1:obj.kstep-1);
-                            e_stance_knee_current_step_rs = obj.e_stance_knee_current_step(1:obj.kstep-1);
-                            
-                            u_stance_hip_pitch_current_step_rs = obj.u_stance_hip_pitch_current_step(1:obj.kstep-1);
-                            e_stance_hip_pitch_current_step_rs = obj.e_stance_hip_pitch_current_step(1:obj.kstep-1);
-                            
-                            u_stance_abduction_current_step_rs = obj.u_stance_abduction_current_step(1:obj.kstep-1);
-                            e_stance_abduction_current_step_rs = obj.e_stance_abduction_current_step(1:obj.kstep-1);
-                            
-                        end
+                        if obj.kstep ~= 1 % first step switched from standing
+%                             s_current_step_rs = linspace(0,1,100);
+%                             u_stance_knee_current_step_rs = YToolkits.bezier(obj.CP_StanceKnee, s_current_step_rs);  
+%                             e_stance_knee_current_step_rs = zeros(1,100);
+%                             
+%                             u_stance_hip_pitch_current_step_rs = zeros(1,100);
+%                             e_stance_hip_pitch_current_step_rs = zeros(1,100);
+%                             
+%                             u_stance_abduction_current_step_rs = YToolkits.bezier(obj.CP_StanceAbdu, s_current_step_rs);  
+%                             e_stance_abduction_current_step_rs = zeros(1,100);
+%                             
+%                         else % for the following steps   
+%                             s_current_step_rs = obj.s_current_step(1:obj.kstep-1);
+%                             u_stance_knee_current_step_rs = obj.u_stance_knee_current_step(1:obj.kstep-1);
+%                             e_stance_knee_current_step_rs = obj.e_stance_knee_current_step(1:obj.kstep-1);
+%                             
+%                             u_stance_hip_pitch_current_step_rs = obj.u_stance_hip_pitch_current_step(1:obj.kstep-1);
+%                             e_stance_hip_pitch_current_step_rs = obj.e_stance_hip_pitch_current_step(1:obj.kstep-1);
+%                             
+%                             u_stance_abduction_current_step_rs = obj.u_stance_abduction_current_step(1:obj.kstep-1);
+%                             e_stance_abduction_current_step_rs = obj.e_stance_abduction_current_step(1:obj.kstep-1);
+%                         end
+                        
+                        
                         % resize the data to a fixed value 1x100
-                        s_interp = linspace(0,s_current_step_rs(end),100);
-                        err_incr = linspace(0,1e-9,length(s_current_step_rs));
+                        s_interp = linspace(0,obj.s_current_step(obj.kstep-1),100);
+                        err_incr = linspace(0,1e-9,length(obj.s_current_step(1:obj.kstep-1)));
                         
-                        u_stance_knee_interp = interp1(s_current_step_rs + err_incr, u_stance_knee_current_step_rs, s_interp);
-                        e_stance_knee_interp = interp1(s_current_step_rs + err_incr, e_stance_knee_current_step_rs, s_interp);
+                        u_stance_knee_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.u_stance_knee_current_step(1:obj.kstep-1), s_interp);
+                        e_stance_knee_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.e_stance_knee_current_step(1:obj.kstep-1), s_interp);
                         
-                        u_stance_hip_pitch_interp = interp1(s_current_step_rs + err_incr, u_stance_hip_pitch_current_step_rs, s_interp);
-                        e_stance_hip_pitch_interp = interp1(s_current_step_rs + err_incr, e_stance_hip_pitch_current_step_rs, s_interp);
+                        u_stance_hip_pitch_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.u_stance_hip_pitch_current_step(1:obj.kstep-1), s_interp);
+                        e_stance_hip_pitch_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.e_stance_hip_pitch_current_step(1:obj.kstep-1), s_interp);
                         
-                        u_stance_abduction_interp = interp1(s_current_step_rs + err_incr, u_stance_abduction_current_step_rs, s_interp);
-                        e_stance_abduction_interp = interp1(s_current_step_rs + err_incr, e_stance_abduction_current_step_rs, s_interp);
+                        u_stance_abduction_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.u_stance_abduction_current_step(1:obj.kstep-1), s_interp);
+                        e_stance_abduction_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.e_stance_abduction_current_step(1:obj.kstep-1), s_interp);
 
                         obj.s_previous_step = s_interp;     
                         % This makes sure the filter always has the same input size
+                        
+                        
+                        
                         
                         % Moving-Average Zero  Filter
                         windowSize = 5; 
@@ -536,6 +540,9 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 
                         obj.u_stance_abduction_previous_step = filtfilt(b, a, u_stance_abduction_interp); % 1x100
                         obj.e_stance_abduction_previous_step = filtfilt(b, a, e_stance_abduction_interp); % 1x100;
+                        
+                        end
+                        
                         
                         % clean current step data structure:
                         obj.s_current_step = linspace(0,1,2000);
@@ -585,7 +592,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 %% Get bezier coefficient for gait from Gaitlibrary obj.dqx_b_fil + obj.fil_vel_offset 
                 % For zero speed only obj.dqx_b_fil
-                obj.gaitparams = ControlPolicy( obj, GaitLibrary, 0);
+                obj.gaitparams= ControlPolicy( obj, GaitLibrary, 0);
                 
                 s_unsat = obj.s_unsat_prev + (t - obj.t_prev)*obj.gaitparams.ct;
                 s = min(s_unsat,1.05); % here s indicates the phase, 0 is the beginning of a step and 1 is the end of a step.
@@ -724,11 +731,18 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 %% Walking Controller
                 hd_original = zeros(10,1);
+%                 hd_original_FROST = zeros(10,1);
+                
                 if obj.task == 1 % walking
                     % Compute desired outputs ( here the outputs dose not
                     % include torso orientation. the outputs will be
                     % modified later
                     obj.hd = YToolkits.bezier(obj.gaitparams.HAlpha,s);
+                    
+                    
+                    % Check Frost Trajectory
+%                     YToolkits.bezier(obj.gaitparams.HAlpha,s);
+                    
                     [ hd_original, ~] = get_IK(obj,obj.hd,obj.dhd);
                     obj.dhd = YToolkits.dbezier(obj.gaitparams.HAlpha,s)*obj.gaitparams.ct;
                     
@@ -834,23 +848,27 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     
                           
                     %% Torso Control
-                    %u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
-                    %u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
                     
+                    % bring them back to test the knee joint tracking only.
+                    u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
+                    u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
                     
-%                     if t < 10
-%                         if obj.pitch_torso_control == 1
-%                             u(3) = (1 - s_L)*u(3) + s_L*u_torso_pitch;
-%                             u(8) = (1 - s_R)*u(8) + s_R*u_torso_pitch;
-% 
-%                         end
-% 
-%                         if obj.roll_torso_control == 1
-%                             u(1) = (1 - s_L)*u(1) + s_L*u_torso_roll;
-%                             u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
-%                         end
-%                     end
-                    
+                    if t < 10
+                        if obj.pitch_torso_control == 1
+                            u(3) = (1 - s_L)*u(3) + s_L*u_torso_pitch;
+                            u(8) = (1 - s_R)*u(8) + s_R*u_torso_pitch;
+
+                        end
+
+                        if obj.roll_torso_control == 1
+                            u(1) = (1 - s_L)*u(1) + s_L*u_torso_roll;
+                            u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
+                        end
+                    end          
+
+
+
+
                     %% Compensation initial handling
                      s_int = s;
                      if obj.s_previous_step(end) <= s % bound the s in the current compensation step
@@ -863,7 +881,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         %u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_cp*s_fast;
                         %u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_cp*(1-s_fast);
                         
-                         if t < 8
+                         if RadioButton.SGA == -1  %t < 8
                              
                              s_CP_stance_abduc = YToolkits.bezier(obj.CP_StanceAbdu,s);
                              u(st_abduction) = u(st_abduction) + abduction_direction * s_CP_stance_abduc;% + u_torso_roll;
@@ -906,7 +924,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     if obj.thigh_compensation == 1
                         
                         
-                        if t < 5  % || obj.com_vel_y_fil > 0.2 % currently the com keep drifting to the left
+                        if RadioButton.SDA == -1  %t < 5  % || obj.com_vel_y_fil > 0.2 % currently the com keep drifting to the left
                             
                              u(st_thigh) = u(st_thigh) + (-15) * s_fast;% + u_torso_roll;
                              % u(st_thigh) = u(st_thigh) + obj.u_thigh_cp*s_fast;
@@ -940,7 +958,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                          % Use a Bezier polynomial for knee precompensation:                           
                         
                          
-                         if t < 5
+                         if RadioButton.SCA == -1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             == 1
                              s_CP_stance_knee = YToolkits.bezier(obj.CP_StanceKnee,s);
                              u(st_knee) = u(st_knee) + s_CP_stance_knee*s_superfast;
                         
@@ -1197,6 +1215,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                
                 Data.hd_original = hd_original;
+                %Data.hd_original_un = hd_original;
                 
                 Data.u_CP_stance_knee = u_CP_stance_knee;
                 Data.e_CP_stance_knee = e_CP_stance_knee;
@@ -1229,12 +1248,12 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             if obj.stanceLeg == 1
                 gaitparams.HAlpha = reshape(HAlpha_R,10, Op+1);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
-                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/Op;
+%                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/Op;
                 gaitparams.ct = ct_R;
             else
                 gaitparams.HAlpha = reshape(HAlpha_L,10, Op+1);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
-                gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/Op;  % try to 
+%                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/Op;  % try to 
                 gaitparams.ct = ct_L;
             end
         end
@@ -1273,36 +1292,39 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             s_L = median([0,1,s_L ]);
             s_R = median([0,1,s_R]);
         end
-        function [ hd_output, dhd_output] = get_FK(obj, hd_joint,dhd_joint)
-            [ hd_output, dhd_output] = get_FK_v1(obj, hd_joint,dhd_joint);
-        end
+%         function [ hd_output, dhd_output] = get_FK(obj, hd_joint,dhd_joint)
+%             [ hd_output, dhd_output] = get_FK_v1(obj, hd_joint,dhd_joint);
+%         end
+%         function [ hd_joint, dhd_joint]   = get_IK(obj, hd_output,dhd_output)
+%             [ hd_joint, dhd_joint] = get_IK_v1(obj, hd_output,dhd_output);
+%         end
         function [ hd_joint, dhd_joint]   = get_IK(obj, hd_output,dhd_output)
-            [ hd_joint, dhd_joint] = get_IK_v1(obj, hd_output,dhd_output);
-        end
-        function [ hd_joint, dhd_joint]   = get_IK_v1(obj, hd_output,dhd_output)
             hd_joint = hd_output;
-            dhd_joint = dhd_output;
             hd_output(4) = min(hd_output(4),1.02);
             hd_output(9) = min(hd_output(9),1.02);
             [hd_joint(3), hd_joint(4)] = Inverse_Kinematics_p(hd_output(3), hd_output(4));
             [hd_joint(8), hd_joint(9)] = Inverse_Kinematics_p(hd_output(8), hd_output(9));
-            [dhd_joint(3), dhd_joint(4)] = Inverse_Kinematics_v(hd_output(3), hd_output(4), dhd_output(3), dhd_output(4));
-            [dhd_joint(8), dhd_joint(9)] = Inverse_Kinematics_v(hd_output(8), hd_output(9), dhd_output(8), dhd_output(9));
+            
+            if nargout > 1
+                 dhd_joint = dhd_output;
+                [dhd_joint(3), dhd_joint(4)] = Inverse_Kinematics_v(hd_output(3), hd_output(4), dhd_output(3), dhd_output(4));
+                [dhd_joint(8), dhd_joint(9)] = Inverse_Kinematics_v(hd_output(8), hd_output(9), dhd_output(8), dhd_output(9));
+            end
+            
         end      
-        function [ hd_output, dhd_output] = get_FK_v1(obj, hd_joint,dhd_joint)
-            hd_output = hd_joint;
-            dhd_output = dhd_joint;
+        function [ hd_output, dhd_output] = get_FK(obj, hd_joint,dhd_joint)
+            hd_output = hd_joint;  
             [hd_output(3), hd_output(4)] = Forward_Kinematics_p(hd_joint(3), hd_joint(4));
             [hd_output(8), hd_output(9)] = Forward_Kinematics_p(hd_joint(8), hd_joint(9));
-            [dhd_output(3), dhd_output(4)] = Forward_Kinematics_v(hd_joint(3), hd_joint(4), dhd_joint(3), dhd_joint(4));
-            [dhd_output(8), dhd_output(9)] = Forward_Kinematics_v(hd_joint(8), hd_joint(9), dhd_joint(8), dhd_joint(9));
+            
+            if nargout > 1
+                 dhd_output = dhd_joint;
+                [dhd_output(3), dhd_output(4)] = Forward_Kinematics_v(hd_joint(3), hd_joint(4), dhd_joint(3), dhd_joint(4));
+                [dhd_output(8), dhd_output(9)] = Forward_Kinematics_v(hd_joint(8), hd_joint(9), dhd_joint(8), dhd_joint(9));
+            end
         end
        
-%         function filtered_data = ZP_filter(obj, data_)
-%                  data_fil_1 = +YToolkits.doFilter( data_);
-%                  data_fil_2 = +YToolkits.doFilter( flip(data_fil_1));
-%                  filtered_data = flip(data_fil_2);
-%         end
+
              
         %% Default functions
         function setupImpl(obj)
