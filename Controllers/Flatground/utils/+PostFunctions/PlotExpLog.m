@@ -82,8 +82,8 @@ TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'};
 
 
 
-   tlb = 10;
-   tup = 12;%3383;
+   tlb = 5;
+   tup = 10;%3383;
    
    
    tlbInd = find(Time>tlb);

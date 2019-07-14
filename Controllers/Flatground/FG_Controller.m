@@ -142,7 +142,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         thigh_compensation = 1;
         abduction_swing_com = 0;
         reduce_impact = 1;
-        keep_direction = 1;
+        keep_direction = 0;
         
         to_turn = 0;
         to_turn_prev = 1;
@@ -219,26 +219,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         s_previous_step = linspace(0,1,100);
         s_current_step = zeros(1,2000);
         kstep = 1;
-        
-        % stance knee
-        u_stance_knee_previous_step = zeros(1,100);
-        e_stance_knee_previous_step = zeros(1,100);      
-        u_stance_knee_current_step  = zeros(1,2000);
-        e_stance_knee_current_step  = zeros(1,2000);
-        
-        % stance hip
-        u_stance_hip_pitch_previous_step = zeros(1,100);
-        e_stance_hip_pitch_previous_step = zeros(1,100);
-        u_stance_hip_pitch_current_step  = zeros(1,2000);
-        e_stance_hip_pitch_current_step  = zeros(1,2000);
-         
-        % stance abduction
-        u_stance_abduction_previous_step = zeros(1,100);
-        e_stance_abduction_previous_step = zeros(1,100);
-        u_stance_abduction_current_step  = zeros(1,2000);
-        e_stance_abduction_current_step  = zeros(1,2000);   
-        
-        
+ 
         % Error in the current step (this is recorded in every time step)
         Error_CurrentStep = zeros(10,2000); % we should at most have 0.4/0.0005 = 800 data points
         
@@ -457,10 +438,6 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 end
                 
                 
-     
-                
-                
-                
                 % || obj.walking_ini == 0
                 % what happens when a step end and a new step begin.
                 if (obj.s_prev >=0.5 && swing_grf >obj.stance_thre_ub && obj.task == 1) || ...
@@ -489,104 +466,42 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 
                         % corp the data to correct sizes
                         if obj.kstep ~= 1 % first step switched from standing
-%                             s_current_step_rs = linspace(0,1,100);
-%                             u_stance_knee_current_step_rs = YToolkits.bezier(obj.CP_StanceKnee, s_current_step_rs);  
-%                             e_stance_knee_current_step_rs = zeros(1,100);
-%                             
-%                             u_stance_hip_pitch_current_step_rs = zeros(1,100);
-%                             e_stance_hip_pitch_current_step_rs = zeros(1,100);
-%                             
-%                             u_stance_abduction_current_step_rs = YToolkits.bezier(obj.CP_StanceAbdu, s_current_step_rs);  
-%                             e_stance_abduction_current_step_rs = zeros(1,100);
-%                             
-%                         else % for the following steps   
-%                             s_current_step_rs = obj.s_current_step(1:obj.kstep-1);
-%                             u_stance_knee_current_step_rs = obj.u_stance_knee_current_step(1:obj.kstep-1);
-%                             e_stance_knee_current_step_rs = obj.e_stance_knee_current_step(1:obj.kstep-1);
-%                             
-%                             u_stance_hip_pitch_current_step_rs = obj.u_stance_hip_pitch_current_step(1:obj.kstep-1);
-%                             e_stance_hip_pitch_current_step_rs = obj.e_stance_hip_pitch_current_step(1:obj.kstep-1);
-%                             
-%                             u_stance_abduction_current_step_rs = obj.u_stance_abduction_current_step(1:obj.kstep-1);
-%                             e_stance_abduction_current_step_rs = obj.e_stance_abduction_current_step(1:obj.kstep-1);
-%                         end
-                        
-                        
+                                                
                         % resize the data to a fixed value 1x100
                         s_interp = linspace(0,obj.s_current_step(obj.kstep-1),100);
                         err_incr = linspace(0,1e-9,length(obj.s_current_step(1:obj.kstep-1)));
                         
-                        
-                        
-                        
-                        % Interpolation of the data structure
-%                         u_stance_knee_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.u_stance_knee_current_step(1:obj.kstep-1), s_interp);
-%                         e_stance_knee_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.e_stance_knee_current_step(1:obj.kstep-1), s_interp);
-%                         
-%                         u_stance_hip_pitch_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.u_stance_hip_pitch_current_step(1:obj.kstep-1), s_interp);
-%                         e_stance_hip_pitch_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.e_stance_hip_pitch_current_step(1:obj.kstep-1), s_interp);
-%                         
-%                         u_stance_abduction_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.u_stance_abduction_current_step(1:obj.kstep-1), s_interp);
-%                         e_stance_abduction_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.e_stance_abduction_current_step(1:obj.kstep-1), s_interp);
 
                         % Interpolation of the data structure (different channels of data are stored as coloum vectors)
-                        u_CurrentStep_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.Torque_CurrentStep(:,1:obj.kstep-1)', s_interp);
-                        e_CurrentStep_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.Error_CurrentStep(:,1:obj.kstep-1,:)',  s_interp);                        
+                        u_CurrentStep_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.Torque_CurrentStep(:,1:obj.kstep-1)', s_interp); % 100x10
+                        e_CurrentStep_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.Error_CurrentStep(:,1:obj.kstep-1,:)',  s_interp); % 100x10                       
                         
                          
                         
                         obj.s_previous_step = s_interp;     
                         % This makes sure the filter always has the same input size
-                        
-                        
-                        
-                        
+                         
                         % Moving-Average Zero  Filter
                         windowSize = 5; 
                         b = (1/windowSize)*ones(1,windowSize);
                         a = 1;
-                        
-%                         figure(101)
-%                         hold on
-%                         plot(s_interp, u_stance_knee_interp,'r')
-%                         
-%                         plot(s_interp, filtfilt(b, a, u_stance_knee_interp),'k:')
-% 
-%                         figure(201)
-%                         hold on
-%                         plot(s_interp, e_stance_knee_interp,'r')
-%                         
-%                         plot(s_interp, filtfilt(b, a, e_stance_knee_interp),'k:')
-                        
-                         
-%                         obj.u_stance_knee_previous_step = filtfilt(b, a, u_stance_knee_interp); % 1x100
-%                         obj.e_stance_knee_previous_step = filtfilt(b, a, e_stance_knee_interp); % 1x100
-% 
-%                         obj.u_stance_hip_pitch_previous_step = filtfilt(b, a, u_stance_hip_pitch_interp); % 1x100
-%                         obj.e_stance_hip_pitch_previous_step = filtfilt(b, a, e_stance_hip_pitch_interp); % 1x100;
-% 
-%                         obj.u_stance_abduction_previous_step = filtfilt(b, a, u_stance_abduction_interp); % 1x100
-%                         obj.e_stance_abduction_previous_step = filtfilt(b, a, e_stance_abduction_interp); % 1x100;
-                        
-                        
+                                                         
                         % The filter will treat each coloum of the data structure as
                         % a different channel of signals
                         obj.Torque_PreviousStep = filtfilt(b, a, u_CurrentStep_interp)'; % 10x100
                         obj.Error_PreviousStep  = filtfilt(b, a, e_CurrentStep_interp)'; % 10x100;
                         
+                        
+                        
+                        figure(1)
+                        hold on
+                        plot(u_CurrentStep_interp(:,4),'r');
+                        plot(obj.Torque_PreviousStep(4,:),'b')
+                        
                         end
-                        
-                        
-                        
                         
                         % clean current step data structure:
                         obj.s_current_step = linspace(0,1,2000);
-%                         obj.u_stance_knee_current_step = zeros(1,2000);
-%                         obj.e_stance_knee_current_step = zeros(1,2000);
-%                         obj.u_stance_hip_pitch_current_step = zeros(1,2000);
-%                         obj.e_stance_hip_pitch_current_step = zeros(1,2000);                       
-%                         obj.u_stance_abduction_current_step = zeros(1,2000);
-%                         obj.e_stance_abduction_current_step = zeros(1,2000);
 
                         obj.Torque_CurrentStep = zeros(10,2000);
                         obj.Error_CurrentStep  = zeros(10,2000);
@@ -780,31 +695,21 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     % modified later
                     obj.hd = YToolkits.bezier(obj.gaitparams.HAlpha,s);
                     
-                    
-                    % Check Frost Trajectory
-%                     YToolkits.bezier(obj.gaitparams.HAlpha,s);
-                    
                     [ hd_original, ~] = get_IK(obj,obj.hd,obj.dhd);
                     obj.dhd = YToolkits.dbezier(obj.gaitparams.HAlpha,s)*obj.gaitparams.ct;
                     
                     %% swing leg foot placement
-                    if obj.foot_placement ==1
-                        
-                        
+                    if obj.foot_placement ==1                         
                         
                         % foot placement in saggital plane + add pitch angle in outputs 
                         obj.hd(sw_LA) = obj.hd(sw_LA)   + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*s_slow  + qpitch*s_slow;
                         obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*ds_slow + qpitch*ds_slow + dqpitch*s_slow;
                         
-                        % modify the desired leg angle to stablize the pitch motion 
-                        %obj.hd(st_LA) = obj.hd(st_LA)   + ( obj.Kp_pitch * qpitch  + obj.Kd_pitch * dqpitch  )*s_slow;  %+ qpitch*s_slow;
-                        %obj.dhd(st_LA) = obj.dhd(st_LA) + ( obj.Kp_pitch *
-                        %qpitch  + obj.Kd_pitch * dqpitch  )*ds_slow;  %+ qpitch*ds_slow + dqpitch*s_slow; + obj.sagittal_offset
-                        obj.hd(st_LA) = obj.hd(st_LA)   - ( 0.2 * qpitch  + 0.3 * dqpitch  )*s_slow  ;% -  3*(obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*s_slow;  %+ qpitch*s_slow;
-                        obj.dhd(st_LA) = obj.dhd(st_LA) - ( 0.2 * qpitch  + 0.3 * dqpitch  )*ds_slow ;% -  3*(obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*ds_slow;  %+ qpitch*ds_slow + dqpitch*s_slow;                        
+                        % Modify the desired stance leg angle (stance hip joint and stance knee joint) to stablize the pitch motion of the torso
+                        obj.hd(st_LA)  = obj.hd(st_LA)   - ( 0.0001 * obj.Kp_pitch * qpitch  + 0.0002 * obj.Kd_pitch * dqpitch  )*s_fast  ;
+                        obj.dhd(st_LA) = obj.dhd(st_LA)  - ( 0.0001 * obj.Kp_pitch * qpitch  + 0.0002 * obj.Kd_pitch * dqpitch  )*ds_fast ;                       
                         
-                        
-                        
+                           
                         % foot placement in frontal plane + add roll angle in outputs 
                         dqy_b_avg_1 = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
                         lateral_ftpl = (obj.Kfl_p*dqy_b_avg_1 + obj.Kfl_d*(dqy_b_avg_1 - obj.v_final_avgy) + abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);
@@ -819,25 +724,20 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         obj.dhd(sw_abduction) = obj.dhd(sw_abduction) +  p * lateral_ftpl * ds_slow + (obj.lateral_offset + obj.lateral_move)*ds_slow - qroll*ds_slow - dqroll*s_slow;
                         
                         
-                        obj.hd(st_abduction)    =  obj.hd(st_abduction)   +  0.5*qroll;
-                        obj.dhd(st_abduction)   =  obj.dhd(st_abduction)  +  0.5*qroll + 4.5*dqroll;                        
+                        obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.5*qroll;
+                        obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.5*qroll + 4.5*dqroll;                        
                         
                         
                         
                         % use hip yaw motor on swing leg to maintain the direction ( or not). 
                         if obj.to_turn ~=1 && obj.keep_direction
-                            direction_keep_term = median([-0.2,0.2,YToolkits.wrap2Pi(obj.tg_yaw - qyaw)]);
-                            obj.hd(sw_rotation) = obj.hd(sw_rotation) + (direction_keep_term+ obj.turning_offset)*s_slow;
+                            direction_keep_term  = median([-0.2,0.2,YToolkits.wrap2Pi(obj.tg_yaw - qyaw)]);
+                            obj.hd(sw_rotation)  = obj.hd(sw_rotation) + (direction_keep_term+ obj.turning_offset)*s_slow;
                             obj.dhd(sw_rotation) = obj.dhd(sw_rotation) + (direction_keep_term + obj.turning_offset)*ds_slow;                            
                         else
-                            obj.hd(sw_rotation) = obj.hd(sw_rotation) + (obj.rotation_move + obj.turning_offset)*s_slow;
+                            obj.hd(sw_rotation)  = obj.hd(sw_rotation) + (obj.rotation_move + obj.turning_offset)*s_slow;
                             obj.dhd(sw_rotation) = obj.dhd(sw_rotation) + (obj.rotation_move + obj.turning_offset)*ds_slow;
                         end
-                        
-                        
-                       %u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
-                       %u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
-                        
                         
 
                     end
@@ -888,24 +788,28 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     u = - obj.Kp.*obj.y_joint - obj.Kd.*obj.dy_joint; % not final torque, some compensation for gravity will be added, the torque on stance hip roll and stance hip pitch will be replaced.
                     
                           
-                    %% Torso Control
+                    %% Torso Torque Control
                     
-                    % bring them back to test the knee joint tracking only.
-%                     u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
-%                     u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
-%                     
-%                     if t < 10
-%                         if obj.pitch_torso_control == 1
-%                             u(3) = (1 - s_L)*u(3) + s_L*u_torso_pitch;
-%                             u(8) = (1 - s_R)*u(8) + s_R*u_torso_pitch;
-% 
-%                         end
-% 
-%                         if obj.roll_torso_control == 1
-%                             u(1) = (1 - s_L)*u(1) + s_L*u_torso_roll;
-%                             u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
-%                         end
-%                     end          
+                    if 0
+                        
+                        % bring them back to test the knee joint tracking only.
+                        u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
+                        u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
+
+                        %if t < 10
+                            if obj.pitch_torso_control == 1
+                                u(3) = (1 - s_L)*u(3) + s_L*u_torso_pitch;
+                                u(8) = (1 - s_R)*u(8) + s_R*u_torso_pitch;
+
+                            end
+
+                            if obj.roll_torso_control == 1
+                                u(1) = (1 - s_L)*u(1) + s_L*u_torso_roll;
+                                u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
+                            end
+                        %end 
+                    
+                    end
 
                     %% Compensation initial handling
                      s_int = s;
@@ -927,36 +831,48 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                      
                     
                     %% abduction compensation
+                    % when SG button is at  0, use constant compensation
+                    % when SG button is at -1, use ILC for stance abduction compensation only
+                    % when SG button is at +1, use ILC for both stance and
+                    % swing abduction compensation
+                    
                     if obj.abduction_com == 1
                         %u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_cp*s_fast;
                         %u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_cp*(1-s_fast);
                         
-                         if RadioButton.SGA ~= 1  %t < 8
+                         if RadioButton.SGA == 0  %t < 8
                              
+                             % Stance abduction compensation
                              s_CP_stance_abduc = YToolkits.bezier(obj.CP_StanceAbdu,s);
                              u(st_abduction) = u(st_abduction) + abduction_direction * s_CP_stance_abduc;% + u_torso_roll;
-                        
-                         else                        
-%                              % Stance abduction compensation
-%                              u_CP_stance_abduction = interp1(obj.s_previous_step + num_diff, obj.Torque_PreviousStep(st_abduction, :), s_int);
-% 
-%                              if obj.s_previous_step(end) >= s + 0.02
-%                                e_CP_stance_abduction = interp1(obj.s_previous_step + num_diff, obj.Error_PreviousStep(st_abduction, :), s_int + 0.02);
-%                              else
-%                                e_CP_stance_abduction = obj.e_stance_abduction_previous_step(end);
-%                              end
 
+                         else  
+                             
+                             % Stance abduction compensation
                              u_CP_stance_abduction = - clamp(u_CP(sw_abduction), -180, 180); % Nm
                              e_CP_stance_abduction = - clamp(e_CP(sw_abduction), -2, 2); % rad
+                             u(st_abduction) = u(st_abduction) + u_CP_stance_abduction*s_superfast + .2*obj.Gamma_knee*e_CP_stance_abduction; %  + u_torso_roll
 
-                             u(st_abduction) = u(st_abduction) + u_CP_stance_abduction*s_superfast + 2*obj.Gamma_knee*e_CP_stance_abduction; %  + u_torso_roll
 
                              
                          end
                          
-                        % Swing abduction compensation              
-                        s_CP_swing_abduc  = YToolkits.bezier(obj.CP_SwingAbdu ,s);
-                        u(sw_abduction) = u(sw_abduction) - abduction_direction * s_CP_swing_abduc;
+
+                         
+                        if RadioButton.SGA == +1
+                             % Swing abduction compensation              
+                             s_CP_swing_abduc  = YToolkits.bezier(obj.CP_SwingAbdu ,s);
+                             
+                             u_CP_swing_abduction = - clamp(u_CP(st_abduction), -180, 180); % Nm
+                             e_CP_swing_abduction = - clamp(e_CP(st_abduction), -2, 2); % rad
+                             u(sw_abduction) = u(sw_abduction) + u_CP_swing_abduction*s_superfast + .2*obj.Gamma_knee*e_CP_swing_abduction; %  + u_torso_roll
+                        
+                        else    
+                             % Swing abduction compensation              
+                             s_CP_swing_abduc  = YToolkits.bezier(obj.CP_SwingAbdu ,s);
+                             u(sw_abduction) = u(sw_abduction) - abduction_direction * s_CP_swing_abduc;
+                        end     
+                         
                         
                         %if obj.abduction_swing_com == 1
                         %    u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_swing_cp*(1-s_fast);
@@ -971,66 +887,90 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
  
 
                     %% thigh (hip pitch) compensation
+                    % when SD button is at  0, use constant compensation
+                    % when SD button is at -1, use ILC for stance hip compensation only
+                    % when SD button is at +1, use ILC for both stance and
+                    % swing hip compensation
+
+                    
                     if obj.thigh_compensation == 1
                         
-                        
-                        if RadioButton.SDA  ~= 1  %t < 5  % || obj.com_vel_y_fil > 0.2 % currently the com keep drifting to the left
-                            
+                        % Stance knee compensation
+                        if RadioButton.SDA  == 0  %t < 5  % || obj.com_vel_y_fil > 0.2 % currently the com keep drifting to the left
+                             % stance thigh compensation using a predefined
+                             % fuction:
+                             % Constant stance thigh compensation
                              u(st_thigh) = u(st_thigh) + (-15) * s_fast;% + u_torso_roll;
                              % u(st_thigh) = u(st_thigh) + obj.u_thigh_cp*s_fast;
                              
                         else  
-                            
-                            % Stance knee compensation
-%                             u_CP_stance_hip_pitch = interp1(obj.s_previous_step + num_diff, obj.Torque_PreviousStep(st_thigh, :), s_int);
-% 
-%                             if obj.s_previous_step(end) >= s + 0.05
-%                               e_CP_stance_hip_pitch = interp1(obj.s_previous_step + num_diff, obj.e_stance_hip_pitch_previous_step, s_int + 0.05);
-%                             else
-%                               e_CP_stance_hip_pitch = obj.e_stance_hip_pitch_previous_step(end);
-%                             end
+                             % ILC stance thigh compensation:
+                             u_CP_stance_hip_pitch = clamp(u_CP(sw_thigh), -150, 150); % Nm
+                             e_CP_stance_hip_pitch = clamp(e_CP(sw_thigh), -1, 1); % rad
+                             u(st_thigh) = u(st_thigh) + u_CP_stance_hip_pitch*s_superfast  + 0.2*obj.Gamma_knee*e_CP_stance_hip_pitch;%  + u_torso_pitch;
 
-                            u_CP_stance_hip_pitch = clamp(u_CP(sw_thigh), -150, 150); % Nm
-                            e_CP_stance_hip_pitch = clamp(e_CP(sw_thigh), -1, 1); % rad
-                            u(st_thigh) = u(st_thigh) + u_CP_stance_hip_pitch*s_superfast  + 0.2*obj.Gamma_knee*e_CP_stance_hip_pitch;%  + u_torso_pitch;
-                           
                         end  
                         
+                        % swing thigh compensation
+                        if RadioButton.SDA  == +1
+                             % ILC swing thigh compensation
+                             u_CP_swing_hip_pitch = clamp(u_CP(st_thigh), -150, 150); % Nm
+                             e_CP_swing_hip_pitch = clamp(e_CP(st_thigh), -1, 1); % rad
+                             u(sw_thigh) = u(sw_thigh) + u_CP_swing_hip_pitch*s_superfast  + 0.2*obj.Gamma_knee*e_CP_swing_hip_pitch;%  + u_torso_pitch; 
+
+                        else
+                             % Constant swing thigh compensation
+                             u(sw_thigh) = u(sw_thigh) + obj.u_thigh_cp*(1-s_fast);
+                            
+                        end     
                         
-                        u(sw_thigh) = u(sw_thigh) + obj.u_thigh_cp*(1-s_fast);
+                        
+                        
                     
                     end
                      
                                      
                     %% knee compensation
+                    % when SC button is at  0, use constant compensation
+                    % when SC button is at -1, use ILC for stance knee compensation only
+                    % when SC button is at +1, use ILC for both stance and
+                    % swing knee compensation
+
                     if obj.knee_com == 1
-                         % u(st_knee) = u(st_knee) + (obj.u_knee_cp)*s_fast*cos(obj.h0(st_thigh));
-                         % Use a Bezier polynomial for knee precompensation:                               
-                         
-                         if  RadioButton.SCA ~= 1 % RadioButton.SCA == -1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             == 1
+                               
+                         if  RadioButton.SCA == 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             == 1
+                             % Constant stance knee compensation
+                             % u(st_knee) = u(st_knee) + (obj.u_knee_cp)*s_fast*cos(obj.h0(st_thigh));
+                             % Use a Bezier polynomial for knee precompensation: 
                              s_CP_stance_knee = YToolkits.bezier(obj.CP_StanceKnee,s);
-                             u(st_knee) = u(st_knee) + s_CP_stance_knee*s_superfast;
+                             u(st_knee) = u(st_knee) + s_CP_stance_knee*s_superfast;      
                         
                          else  
-%                              % Stance knee compensation
-%                              u_CP_stance_knee = interp1(obj.s_previous_step + num_diff, obj.u_stance_knee_previous_step, s_int);
-% 
-%                              if obj.s_previous_step(end) >= s + 0.05
-%                                e_CP_stance_knee = interp1(obj.s_previous_step + num_diff, obj.e_stance_knee_previous_step, s_int + 0.05);
-%                              else
-%                                e_CP_stance_knee = obj.e_stance_knee_previous_step(end);
-%                              end
-                             % should be the st_knee in the previous step
+                             % ILC stance knee compensation
+                             % these are the st_knee in the previous step
                              u_CP_stance_knee = clamp(u_CP(sw_knee), -20, 180); % Nm
                              e_CP_stance_knee = clamp(e_CP(sw_knee), -2, 2); % rad
 
                              u(st_knee) = u(st_knee) + u_CP_stance_knee*s_superfast + 1*obj.Gamma_knee*e_CP_stance_knee;
-
+                             
                          end
                          
                          % Swing knee compensation
-                         s_CP_swing_knee = YToolkits.bezier(obj.CP_SwingKnee,s); 
-                         u(sw_knee) = u(sw_knee) + s_CP_swing_knee;
+                         if  RadioButton.SCA == +1 % turn on the swing knee compensation
+                             
+                             % ILC swing knee compensation
+                             u_CP_swing_knee = clamp(u_CP(st_knee), -50, 50); % Nm
+                             e_CP_swing_knee = clamp(e_CP(st_knee), -2, 2); % rad
+                             u(sw_knee) = u(sw_knee) + u_CP_swing_knee*s_superfast + 0.5*obj.Gamma_knee*e_CP_swing_knee; 
+                        
+                         else
+                   
+                             % Constant swing knee compensation
+                             s_CP_swing_knee = YToolkits.bezier(obj.CP_SwingKnee,s); 
+                             u(sw_knee) = u(sw_knee) + s_CP_swing_knee;
+                         end     
+                             
+
                     end
                     
                     %% Toe compensation
@@ -1051,14 +991,6 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
               
-%                     obj.e_stance_knee_current_step(obj.kstep)      =  obj.y_joint(st_knee);
-%                     obj.u_stance_knee_current_step(obj.kstep)      =  u(st_knee);
-%                     
-%                     obj.e_stance_hip_pitch_current_step(obj.kstep) =  obj.y_joint(st_thigh);
-%                     obj.u_stance_hip_pitch_current_step(obj.kstep) =  u(st_thigh);
-% 
-%                     obj.e_stance_abduction_current_step(obj.kstep) =  obj.y_joint(st_abduction);
-%                     obj.u_stance_abduction_current_step(obj.kstep) =  u(st_abduction);
 
                     obj.Error_CurrentStep(:, obj.kstep)  =  obj.y_joint;
                     obj.Torque_CurrentStep(:, obj.kstep) =  u;
@@ -1265,19 +1197,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                
                 Data.hd_original = hd_original;
-                %Data.hd_original_un = hd_original;
-                
-%                 Data.u_CP_stance_knee = u_CP_stance_knee;
-%                 Data.e_CP_stance_knee = e_CP_stance_knee;
-%                 Data.u_OT_stance_knee = u(st_knee);
-% 
-%                 Data.u_CP_stance_hip_pitch = u_CP_stance_hip_pitch;
-%                 Data.e_CP_stance_hip_pitch = e_CP_stance_hip_pitch;
-%                 Data.u_OT_stance_hip_pitch = u(st_thigh);
-%                            
-%                 Data.u_CP_stance_abduction = u_CP_stance_abduction;
-%                 Data.e_CP_stance_abduction = e_CP_stance_abduction;
-%                 Data.u_OT_stance_abduction = u(st_abduction);
+
                            
             end
             % Return the updated Cassie inputs data structure
@@ -1297,13 +1217,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             
             if obj.stanceLeg == 1
                 gaitparams.HAlpha = reshape(HAlpha_R,10, Op+1);
-                gaitparams.HAlpha(:,1) = obj.hd_last;
-%                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/Op;
+                % gaitparams.HAlpha(:,1) = obj.hd_last;
+                % gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/Op;
                 gaitparams.ct = ct_R;
             else
                 gaitparams.HAlpha = reshape(HAlpha_L,10, Op+1);
-                gaitparams.HAlpha(:,1) = obj.hd_last;
-%                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/Op;  % try to 
+                % gaitparams.HAlpha(:,1) = obj.hd_last;
+                % gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/Op;  % try to 
                 gaitparams.ct = ct_L;
             end
         end
