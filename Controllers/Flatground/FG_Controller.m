@@ -89,6 +89,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         
         Gamma_knee;
         
+        com_bp
+        
 
     end
     % PROTECTED PROPERTIES ====================================================
@@ -231,7 +233,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         
         % Torque in the previous step (this is interpolated into 100 data points)
         Torque_PreviousStep = zeros(10,100); % we should at most have 100 data points  
-               
+            
+        
     end % properties
     properties (Access = private, Constant)
         TorqueLimits = repmat([112.5;112.5;195.2;195.2;45],[2,1]);
@@ -493,10 +496,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         
                         
                         
-                        figure(1)
-                        hold on
-                        plot(u_CurrentStep_interp(:,4),'r');
-                        plot(obj.Torque_PreviousStep(4,:),'b')
+%                         figure(1)
+%                         hold on
+%                         plot(u_CurrentStep_interp(:,4),'r');
+%                         plot(obj.Torque_PreviousStep(4,:),'b')
                         
                         end
                         
@@ -589,7 +592,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 %% Get bezier coefficient for gait from Gaitlibrary obj.dqx_b_fil + obj.fil_vel_offset 
                 % For zero speed only obj.dqx_b_fil
-                obj.gaitparams= ControlPolicy( obj, GaitLibrary, 0);
+                obj.gaitparams= ControlPolicy( obj, GaitLibrary, obj.dqx_b_fil);
                 
                 s_unsat = obj.s_unsat_prev + (t - obj.t_prev)*obj.gaitparams.ct;
                 s = min(s_unsat,1.05); % here s indicates the phase, 0 is the beginning of a step and 1 is the end of a step.
@@ -1262,36 +1265,57 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             s_L = median([0,1,s_L ]);
             s_R = median([0,1,s_R]);
         end
-%         function [ hd_output, dhd_output] = get_FK(obj, hd_joint,dhd_joint)
-%             [ hd_output, dhd_output] = get_FK_v1(obj, hd_joint,dhd_joint);
-%         end
-%         function [ hd_joint, dhd_joint]   = get_IK(obj, hd_output,dhd_output)
-%             [ hd_joint, dhd_joint] = get_IK_v1(obj, hd_output,dhd_output);
-%         end
-        function [ hd_joint, dhd_joint]   = get_IK(obj, hd_output,dhd_output)
+        function [ hd_output, dhd_output] = get_FK(obj, hd_joint,dhd_joint)
+            [ hd_output, dhd_output] = get_FK_v2(obj, hd_joint,dhd_joint);
+        end
+        function [ hd_joint, dhd_joint] = get_IK(obj, hd_output,dhd_output)
+            [ hd_joint, dhd_joint] = get_IK_v2(obj, hd_output,dhd_output);
+        end
+        function [ hd_joint, dhd_joint] = get_IK_v1(obj, hd_output,dhd_output)
             hd_joint = hd_output;
+            dhd_joint = dhd_output;
             hd_output(4) = min(hd_output(4),1.02);
             hd_output(9) = min(hd_output(9),1.02);
             [hd_joint(3), hd_joint(4)] = Inverse_Kinematics_p(hd_output(3), hd_output(4));
             [hd_joint(8), hd_joint(9)] = Inverse_Kinematics_p(hd_output(8), hd_output(9));
-            
-            if nargout > 1
-                 dhd_joint = dhd_output;
-                [dhd_joint(3), dhd_joint(4)] = Inverse_Kinematics_v(hd_output(3), hd_output(4), dhd_output(3), dhd_output(4));
-                [dhd_joint(8), dhd_joint(9)] = Inverse_Kinematics_v(hd_output(8), hd_output(9), dhd_output(8), dhd_output(9));
-            end
-            
-        end      
-        function [ hd_output, dhd_output] = get_FK(obj, hd_joint,dhd_joint)
-            hd_output = hd_joint;  
+            [dhd_joint(3), dhd_joint(4)] = Inverse_Kinematics_v(hd_output(3), hd_output(4), dhd_output(3), dhd_output(4));
+            [dhd_joint(8), dhd_joint(9)] = Inverse_Kinematics_v(hd_output(8), hd_output(9), dhd_output(8), dhd_output(9));
+        end
+        
+        function [ hd_output, dhd_output] = get_FK_v1(obj, hd_joint,dhd_joint)
+            hd_output = hd_joint;
+            dhd_output = dhd_joint;
             [hd_output(3), hd_output(4)] = Forward_Kinematics_p(hd_joint(3), hd_joint(4));
             [hd_output(8), hd_output(9)] = Forward_Kinematics_p(hd_joint(8), hd_joint(9));
+            [dhd_output(3), dhd_output(4)] = Forward_Kinematics_v(hd_joint(3), hd_joint(4), dhd_joint(3), dhd_joint(4));
+            [dhd_output(8), dhd_output(9)] = Forward_Kinematics_v(hd_joint(8), hd_joint(9), dhd_joint(8), dhd_joint(9));
+        end
+        function [ hd_joint, dhd_joint] = get_IK_v2(obj, hd_output,dhd_output)
+            % new leg angle to old leg angle
+            [hd_output(3), dhd_output(3)] = LegAngleInverseTransform(obj.com_bp, hd_output(3), hd_output(4), dhd_output(3), dhd_output(4));
+            [hd_output(8), dhd_output(8)] = LegAngleInverseTransform(obj.com_bp, hd_output(8), hd_output(9), dhd_output(8), dhd_output(9));
+            hd_joint = hd_output;
+            dhd_joint = dhd_output;
+            hd_output(4) = min(hd_output(4),1.02);
+            hd_output(9) = min(hd_output(9),1.02);
+            [hd_joint(3), hd_joint(4)] = Inverse_Kinematics_p(hd_output(3), hd_output(4));
+            [hd_joint(8), hd_joint(9)] = Inverse_Kinematics_p(hd_output(8), hd_output(9));
+            [dhd_joint(3), dhd_joint(4)] = Inverse_Kinematics_v(hd_output(3), hd_output(4), dhd_output(3), dhd_output(4));
+            [dhd_joint(8), dhd_joint(9)] = Inverse_Kinematics_v(hd_output(8), hd_output(9), dhd_output(8), dhd_output(9));
+        end
+        
+        function [ hd_output, dhd_output] = get_FK_v2(obj, hd_joint,dhd_joint,com_rp)
+            hd_output = hd_joint;
+            dhd_output = dhd_joint;
+            [hd_output(3), hd_output(4)] = Forward_Kinematics_p(hd_joint(3), hd_joint(4));
+            [hd_output(8), hd_output(9)] = Forward_Kinematics_p(hd_joint(8), hd_joint(9));
+            [dhd_output(3), dhd_output(4)] = Forward_Kinematics_v(hd_joint(3), hd_joint(4), dhd_joint(3), dhd_joint(4));
+            [dhd_output(8), dhd_output(9)] = Forward_Kinematics_v(hd_joint(8), hd_joint(9), dhd_joint(8), dhd_joint(9));
             
-            if nargout > 1
-                 dhd_output = dhd_joint;
-                [dhd_output(3), dhd_output(4)] = Forward_Kinematics_v(hd_joint(3), hd_joint(4), dhd_joint(3), dhd_joint(4));
-                [dhd_output(8), dhd_output(9)] = Forward_Kinematics_v(hd_joint(8), hd_joint(9), dhd_joint(8), dhd_joint(9));
-            end
+            %old leg angle to new leg angle
+            [hd_output(3), dhd_output(3)] = LegAngleForwardTransform(obj.com_bp, hd_output(3), hd_output(4), dhd_output(3), dhd_output(4));
+            [hd_output(8), dhd_output(8)] = LegAngleForwardTransform(obj.com_bp, hd_output(8), hd_output(9), dhd_output(8), dhd_output(9));
+
         end
        
 
