@@ -1220,12 +1220,12 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             
             if obj.stanceLeg == 1
                 gaitparams.HAlpha = reshape(HAlpha_R,10, Op+1);
-                % gaitparams.HAlpha(:,1) = obj.hd_last;
+                gaitparams.HAlpha(:,1) = obj.hd_last;
                 % gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/Op;
                 gaitparams.ct = ct_R;
             else
                 gaitparams.HAlpha = reshape(HAlpha_L,10, Op+1);
-                % gaitparams.HAlpha(:,1) = obj.hd_last;
+                gaitparams.HAlpha(:,1) = obj.hd_last;
                 % gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/Op;  % try to 
                 gaitparams.ct = ct_L;
             end
