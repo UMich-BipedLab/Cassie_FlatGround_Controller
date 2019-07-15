@@ -48,46 +48,95 @@ plotbrowser('on')
 
 %% Joint left
 close all
+
 hd_joint   = log.Data.hd_joint';  
 h0_joint   = log.Data.h0_joint';  
+dhd_joint = log.Data.dhd_joint';  
+dh0_joint = log.Data.dh0_joint';  
+
+%
+
 s          = log.Data.s';
 stanceleg  = log.Data.stanceLeg';
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
 
+tlb = 180; % time in seconds
+tup = 190;%3383;
+
+tlbInd = find(log.Data.t>tlb);
+tlbInd = tlbInd(1);
+
+tupInd = find(log.Data.t<tup);
+tupInd = tupInd(end);
+
 for k = 1:5
     
 %    figure(k)
-   figure('Position',[k*300,100,400,300])
+   figure('Position',[k*300,300,1800,600]);
+   % position plot
+   ax1 = subplot(2,1,1);
    hold on;
 
-
-   tlb = 1.0002e+03+0.4;
-   tup = 1.0002e+03+1.2;%3383;
-   
-   xlim([tlb,tup]);
-   tlbInd = find(log.Data.t>tlb);
-   tlbInd = tlbInd(1);
-   
-   tupInd = find(log.Data.t<tup);
-   tupInd = tupInd(end);
-   
-   minlim = min([hd_joint(k,tlbInd:tupInd), h0_joint(k,tlbInd:tupInd)]);
-   maxlim = max([hd_joint(k,tlbInd:tupInd), h0_joint(k,tlbInd:tupInd)]);
-   
+   minlim = min([hd_joint(k,tlbInd:tupInd), h0_joint(k,tlbInd:tupInd), hd_joint(k+5,tlbInd:tupInd), h0_joint(k+5,tlbInd:tupInd)]);
+   maxlim = max([hd_joint(k,tlbInd:tupInd), h0_joint(k,tlbInd:tupInd), hd_joint(k+5,tlbInd:tupInd), h0_joint(k+5,tlbInd:tupInd)]);
    Byu = abs(maxlim - minlim);
    Ns = ones(size(s))*(maxlim + minlim)/2;
-   % h1 = plot(log.Data.t(stanceleg==1),Ns(stanceleg==1),'.','MarkerSize',0.1,'MarkerEdgeColor',[202/256,100/256,73/256],'MarkerFaceColor',[202/256,100/256,73/256]);
+   
    plot(log.Data.t, hd_joint(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
    plot(log.Data.t, h0_joint(k,:),'linewidth',2,'color',[0/256,114/256,189/256]);
-   ylim([minlim - 0.1*Byu, maxlim + 0.1*Byu]);
+   
+
+   p1 = plot(log.Data.t, hd_joint(k+5,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   p2 = plot(log.Data.t, h0_joint(k+5,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   
+   p1.Color(4) = 0.2;   
+   p2.Color(4) = 0.2;  
+   
    h2 = plot(log.Data.t(stanceleg~=1),Ns(stanceleg~=1),'o','MarkerSize',0.1,'MarkerEdgeColor',[0/256,114/256,189/256] ,'MarkerFaceColor',[0/256,114/256,189/256]);
    legend('desired','actual')
    title(['Joint tracking of left ', TitleNames{k},' motor']);
-   title([TitleNames{k},' motor']);
    xlabel('Time (sec)');
    ylabel('Angle (rad)');
    box on;
+   grid on;
+   xlim([tlb,tup]);
+   ylim([minlim - 0.1*Byu, maxlim + 0.1*Byu]);
+   
+   
+   % velocity plot
+   ax2 = subplot(2,1,2);
+   hold on
+   
+   minlim = min([dhd_joint(k,tlbInd:tupInd), dh0_joint(k,tlbInd:tupInd),dhd_joint(k+5,tlbInd:tupInd), dh0_joint(k+5,tlbInd:tupInd)]);
+   maxlim = max([dhd_joint(k,tlbInd:tupInd), dh0_joint(k,tlbInd:tupInd),dhd_joint(k+5,tlbInd:tupInd), dh0_joint(k+5,tlbInd:tupInd)]);
+   Byu = abs(maxlim - minlim);
+   Ns = ones(size(s))*(maxlim + minlim)/2;
+   
+   
+   plot(log.Data.t, dhd_joint(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   plot(log.Data.t, dh0_joint(k,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   
+   ps = plot(log.Data.t(stanceleg~=1),Ns(stanceleg~=1),'o','MarkerSize',1,'MarkerEdgeColor',[17 17 17]./256 ,'MarkerFaceColor',[17 17 17]./256);
+   
+   p1 = plot(log.Data.t, dhd_joint(k+5,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   p2 = plot(log.Data.t, dh0_joint(k+5,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   
+   p1.Color(4) = 0.2;   
+   p2.Color(4) = 0.2;   
+   
+   
+   ylim([minlim - 0.1*Byu, maxlim + 0.1*Byu]);  
+   legend('desired','actual')
+   title(['Joint velocity tracking of left ', TitleNames{k},' motor']);
+   title([TitleNames{k},' motor']);
+   xlabel('Time (sec)');
+   ylabel('Joint Velocity (rad/s)');
+   box on;
+   xlim([tlb,tup]);
+   grid on;
+   
+   linkaxes([ax1,ax2],'x'); 
 %    print(gcf, '-dpdf', '-painters', [num2str(k),'Push_Test.pdf']); 
 end    
 %%

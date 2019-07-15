@@ -24,7 +24,7 @@ DataBusSelectorName = 'Data Bus Selector';
 
 %
 mdl = char(tg.Application);
-% mdl = 'FG_RealTime.slx';
+% mdl = 'FG_RealTime';
 sys = get_param(mdl, 'Handle');
 BusSelectors = find_system(sys,'FollowLinks','on','SearchDepth',10,'BlockType','BusSelector');
 
