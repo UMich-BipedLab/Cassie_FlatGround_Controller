@@ -91,3 +91,15 @@ log.description.Setup = user_input{2};
 log.description.Results = user_input{3};
 save('Log', 'log')
 % cd(root_dir);
+%%
+% Define intial pelvis state
+pelvisPosition = [0; 0; 1.2];
+pelvisVelocity = [0; 0; 0];
+pelvisRotation = Rotation3d.identity.getValue;
+pelvisAngularVelocity = [0; 0; 0];
+
+% Define initial motor states
+figure;
+motorPositions = testLegIK;
+motorVelocities = zeros(10,1);
+% close(gcf);

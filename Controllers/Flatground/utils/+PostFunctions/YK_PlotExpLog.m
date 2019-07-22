@@ -51,18 +51,16 @@ close all
 
 hd_joint   = log.Data.hd_joint';  
 h0_joint   = log.Data.h0_joint';  
-dhd_joint = log.Data.dhd_joint';  
-dh0_joint = log.Data.dh0_joint';  
-
-%
+dhd_joint  = log.Data.dhd_joint';  
+dh0_joint  = log.Data.dh0_joint';  
+u_motors   = log.Data.u'; 
 
 s          = log.Data.s';
 stanceleg  = log.Data.stanceLeg';
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
-
 tlb = 180; % time in seconds
-tup = 190;%3383;
+tup = 190; % 3383;
 
 tlbInd = find(log.Data.t>tlb);
 tlbInd = tlbInd(1);
@@ -72,10 +70,9 @@ tupInd = tupInd(end);
 
 for k = 1:5
     
-%    figure(k)
    figure('Position',[k*300,300,1800,600]);
    % position plot
-   ax1 = subplot(2,1,1);
+   ax1 = subplot(3,1,1);
    hold on;
 
    minlim = min([hd_joint(k,tlbInd:tupInd), h0_joint(k,tlbInd:tupInd), hd_joint(k+5,tlbInd:tupInd), h0_joint(k+5,tlbInd:tupInd)]);
@@ -105,7 +102,7 @@ for k = 1:5
    
    
    % velocity plot
-   ax2 = subplot(2,1,2);
+   ax2 = subplot(3,1,2);
    hold on
    
    minlim = min([dhd_joint(k,tlbInd:tupInd), dh0_joint(k,tlbInd:tupInd),dhd_joint(k+5,tlbInd:tupInd), dh0_joint(k+5,tlbInd:tupInd)]);
@@ -136,7 +133,43 @@ for k = 1:5
    xlim([tlb,tup]);
    grid on;
    
-   linkaxes([ax1,ax2],'x'); 
+   
+   
+   
+   % velocity plot
+   ax3 = subplot(3,1,3);
+   hold on
+   
+   minlim = min([u_motors(k,tlbInd:tupInd), u_motors(k+5,tlbInd:tupInd)]);
+   maxlim = max([u_motors(k,tlbInd:tupInd), u_motors(k+5,tlbInd:tupInd)]);
+   Byu = abs(maxlim - minlim);
+   Ns = ones(size(s))*(maxlim + minlim)/2;
+   
+   
+   plot(log.Data.t, u_motors(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   %plot(log.Data.t, u_motors(k,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   
+   ps = plot(log.Data.t(stanceleg~=1),Ns(stanceleg~=1),'o','MarkerSize',1,'MarkerEdgeColor',[17 17 17]./256 ,'MarkerFaceColor',[17 17 17]./256);
+   
+   p1 = plot(log.Data.t, u_motors(k+5,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   %p2 = plot(log.Data.t, u_motors(k+5,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   
+   p1.Color(4) = 0.2;   
+   %p2.Color(4) = 0.2;   
+   
+   
+   ylim([minlim - 0.1*Byu, maxlim + 0.1*Byu]);  
+   % legend('desired','actual')
+   title(['Joint torque of left ', TitleNames{k},' motor']);
+   title([TitleNames{k},' motor']);
+   xlabel('Time (sec)');
+   ylabel('Joint Torques (Nm/s)');
+   box on;
+   xlim([tlb,tup]);
+   grid on;
+   
+   
+   linkaxes([ax1,ax2,ax3],'x'); 
 %    print(gcf, '-dpdf', '-painters', [num2str(k),'Push_Test.pdf']); 
 end    
 %%
