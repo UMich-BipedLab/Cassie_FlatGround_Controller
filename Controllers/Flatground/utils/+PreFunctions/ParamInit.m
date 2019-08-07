@@ -95,10 +95,16 @@ c_CP_SwingKnee  = [0, 0, 0, 0, 0];
 c_CP_StanceAbdu = [0, 50, 30, 40, 0];
 c_CP_SwingAbdu  = [-5, -8, 20, 25, -5];
 
-
-c_Gamma_knee = 150;
+c_Gamma_st_abu  = 50*0.01;
+c_Gamma_sw_abu  = 10*0.01;
+c_Gamma_st_hip  = 50*0.01;
+c_Gamma_sw_hip  = 10*0.01;
+c_Gamma_st_knee = 150;
+c_Gamma_sw_knee = 150*0.01;
 
 c_com_bp = 0.1;
+
+c_sagittal_speed = 0;
 
 
 

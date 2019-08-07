@@ -1,7 +1,7 @@
 tg = slrt;
-sc1 = getscope(tg,1);
+% sc1 = getscope(tg,1);
 sc5 = getscope(tg,5);
-scope_object_vector = stop(sc1);
+% scope_object_vector = stop(sc1);
 scope_object_vector = stop(sc5);
 
 
@@ -14,17 +14,21 @@ mkdir(save_path)
 cd(save_path)
 
 %% copy the dat files from target computer
-SimulinkRealTime.copyFileToHost(tg, ['CASSIE1.dat'])
-SimulinkRealTime.copyFileToHost(tg, ['DATA.dat'])
+% SimulinkRealTime.copyFileToHost(tg, ['CASSIE1.dat'])
+SimulinkRealTime.copyFileToHost(tg, ['DATA4.dat'])
 
 
 %% Parse Data.dat
-DataMatrix = SimulinkRealTime.utils.getFileScopeData('DATA.dat');
+DataMatrix1 = SimulinkRealTime.utils.getFileScopeData('DATA1.dat');
+DataMatrix2 = SimulinkRealTime.utils.getFileScopeData('DATA2.dat');
+DataMatrix3 = SimulinkRealTime.utils.getFileScopeData('DATA3.dat');
+DataMatrix.data = [DataMatrix1.data;DataMatrix2.data;DataMatrix3.data];
+
 DataBusSelectorName = 'Data Bus Selector';
 
 %
-mdl = char(tg.Application);
-% mdl = 'FG_RealTime';
+% mdl = char(tg.Application);
+mdl = 'FG_RealTime';
 sys = get_param(mdl, 'Handle');
 BusSelectors = find_system(sys,'FollowLinks','on','SearchDepth',10,'BlockType','BusSelector');
 

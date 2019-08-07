@@ -44,8 +44,48 @@ plot(log.Data.t,log.Data.u)
 lg = legend('u_1','u_2','u_3','u_4','u_5','u_6','u_7','u_8','u_9','u_10')
 set(lg,'visible','off');
 plotbrowser('on')
+%%
 
+% Radio control signals 
+% RadioButton.LVA = RadioChannel(1);
+% RadioButton.LHA = RadioChannel(2);
+% RadioButton.RVA = RadioChannel(3);
+% RadioButton.RHA = RadioChannel(4);
+% RadioButton.S1A = RadioChannel(5);
+% RadioButton.S2A = RadioChannel(6);
+% RadioButton.LSA = RadioChannel(7);
+% RadioButton.RSA = RadioChannel(8);
+% RadioButton.SAA = RadioChannel(9);
+% RadioButton.SBA = RadioChannel(10);
+% RadioButton.SCA = RadioChannel(11);
+    % when SC button is at  0, use constant compensation
+    % when SC button is at -1, use ILC for stance knee compensation only
+    % when SC button is at +1, use ILC for both stance and
+    % swing knee compensation
 
+% RadioButton.SDA = RadioChannel(12);
+    % when SD button is at -1, use constant compensation
+    % when SD button is at  0, use ILC for stance hip compensation only
+    % when SD button is at +1, use ILC for both stance and
+    % swing hip compensation
+
+% RadioButton.SEA = RadioChannel(13);
+% RadioButton.SFA = RadioChannel(14); 
+    % update the data if SFA == +1
+% RadioButton.SGA = RadioChannel(15);
+    % when SG button is at -1, use constant compensation abduction
+    % when SG button is at  0, use ILC for stance compensation only
+    % when SG button is at +1, use ILC for both stance and swing
+% RadioButton.SHA = RadioChannel(16);
+% figure
+% plot(log.Data.t,log.Data.RadioChannel(:,12))
+
+figure
+hold on
+plot(log.Data.t,log.Data.RadioChannel(:,11)); % knee
+plot(log.Data.t,log.Data.RadioChannel(:,12)); % hip
+plot(log.Data.t,log.Data.RadioChannel(:,14)); % SFA update data
+legend('Knee','Hip','Update')
 %% Joint left
 close all
 
@@ -59,8 +99,8 @@ s          = log.Data.s';
 stanceleg  = log.Data.stanceLeg';
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
-tlb = 180; % time in seconds
-tup = 190; % 3383;
+tlb = 3993 ; % time in seconds
+tup = tlb + 5; % 3383;
 
 tlbInd = find(log.Data.t>tlb);
 tlbInd = tlbInd(1);
@@ -68,11 +108,13 @@ tlbInd = tlbInd(1);
 tupInd = find(log.Data.t<tup);
 tupInd = tupInd(end);
 
+
+
 for k = 1:5
     
-   figure('Position',[k*300,300,1800,600]);
+   figure('Position',[k*300,-500,1600,1200]);
    % position plot
-   ax1 = subplot(3,1,1);
+   ax1 = subplot(4,1,1);
    hold on;
 
    minlim = min([hd_joint(k,tlbInd:tupInd), h0_joint(k,tlbInd:tupInd), hd_joint(k+5,tlbInd:tupInd), h0_joint(k+5,tlbInd:tupInd)]);
@@ -102,7 +144,7 @@ for k = 1:5
    
    
    % velocity plot
-   ax2 = subplot(3,1,2);
+   ax2 = subplot(4,1,2);
    hold on
    
    minlim = min([dhd_joint(k,tlbInd:tupInd), dh0_joint(k,tlbInd:tupInd),dhd_joint(k+5,tlbInd:tupInd), dh0_joint(k+5,tlbInd:tupInd)]);
@@ -137,7 +179,7 @@ for k = 1:5
    
    
    % velocity plot
-   ax3 = subplot(3,1,3);
+   ax3 = subplot(4,1,3);
    hold on
    
    minlim = min([u_motors(k,tlbInd:tupInd), u_motors(k+5,tlbInd:tupInd)]);
@@ -169,7 +211,30 @@ for k = 1:5
    grid on;
    
    
-   linkaxes([ax1,ax2,ax3],'x'); 
+  % velocity plot
+   ax4 = subplot(4,1,4);
+   hold on
+   
+%    plot(log.Data.t, u_motors(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+   plot(log.Data.t,log.Data.RadioChannel(:,11)); % knee
+   plot(log.Data.t,log.Data.RadioChannel(:,12)); % hip
+   plot(log.Data.t,log.Data.RadioChannel(:,14)); % SFA update data
+   
+   
+   ylim([-1, 1]);  
+   % legend('desired','actual')
+   title(['Joint torque of left ', TitleNames{k},' motor']);
+   legend('Knee','Hip','Update')
+   xlabel('Time (sec)');
+   ylabel('Control Signals');
+   box on;
+   xlim([tlb,tup]);
+   grid on;  
+   
+   
+   linkaxes([ax1,ax2,ax3,ax4],'x'); 
+   
+   
 %    print(gcf, '-dpdf', '-painters', [num2str(k),'Push_Test.pdf']); 
 end    
 %%

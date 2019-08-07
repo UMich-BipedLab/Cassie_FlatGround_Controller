@@ -245,4 +245,8 @@ Data.e_CP_stance_abduction = 0;
 Data.u_OT_stance_abduction = 0;
 
 Data.computer_time = 0;
+
+Data.Torque_CP = zeros(10,1);
+Data.Error_CP  = zeros(10,1);
+Data.RadioChannel = zeros(16,1);
 end
