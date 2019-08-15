@@ -85,7 +85,9 @@ hold on
 plot(log.Data.t,log.Data.RadioChannel(:,11)); % knee
 plot(log.Data.t,log.Data.RadioChannel(:,12)); % hip
 plot(log.Data.t,log.Data.RadioChannel(:,14)); % SFA update data
-legend('Knee','Hip','Update')
+plot(log.Data.t,log.Data.tg_velocity_x);
+legend('Knee','Hip','Update','Desired Speed')
+ylim([-1.5 1.5])
 %% Joint left
 close all
 
@@ -99,7 +101,7 @@ s          = log.Data.s';
 stanceleg  = log.Data.stanceLeg';
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
-tlb = 3993 ; % time in seconds
+tlb = 893; % time in seconds
 tup = tlb + 5; % 3383;
 
 tlbInd = find(log.Data.t>tlb);
@@ -112,7 +114,7 @@ tupInd = tupInd(end);
 
 for k = 1:5
     
-   figure('Position',[k*300,-500,1600,1200]);
+   figure('Position',[k*300,100,1600,1200]);
    % position plot
    ax1 = subplot(4,1,1);
    hold on;
@@ -203,7 +205,6 @@ for k = 1:5
    ylim([minlim - 0.1*Byu, maxlim + 0.1*Byu]);  
    % legend('desired','actual')
    title(['Joint torque of left ', TitleNames{k},' motor']);
-   title([TitleNames{k},' motor']);
    xlabel('Time (sec)');
    ylabel('Joint Torques (Nm/s)');
    box on;
@@ -216,15 +217,16 @@ for k = 1:5
    hold on
    
 %    plot(log.Data.t, u_motors(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
-   plot(log.Data.t,log.Data.RadioChannel(:,11)); % knee
-   plot(log.Data.t,log.Data.RadioChannel(:,12)); % hip
+   plot(log.Data.t,log.Data.RadioChannel(:,11),'linewidth',2); % knee
+   plot(log.Data.t,log.Data.RadioChannel(:,12),'linewidth',1); % hip
    plot(log.Data.t,log.Data.RadioChannel(:,14)); % SFA update data
+   plot(log.Data.t,log.Data.RadioChannel(:,15)); % Abu update data
+   plot(log.Data.t,log.Data.tg_velocity_x);
    
-   
-   ylim([-1, 1]);  
+   ylim([-1.2, 1.2]);  
    % legend('desired','actual')
-   title(['Joint torque of left ', TitleNames{k},' motor']);
-   legend('Knee','Hip','Update')
+   title('Control Signals');
+   legend('Knee','Hip','Update','Abudction','target speed')
    xlabel('Time (sec)');
    ylabel('Control Signals');
    box on;
@@ -237,6 +239,91 @@ for k = 1:5
    
 %    print(gcf, '-dpdf', '-painters', [num2str(k),'Push_Test.pdf']); 
 end    
+%% Plot joint torques of 10 continuous steps
+close all
+figure('Position',[300,100,1400,600]);
+hold on
+view([45 45]);
+grid on; box on;
+xlabel('Time (s)');
+ylabel('Desired Speed (m/s)');
+zlabel('Torques (Nm)');
+c = jet(7);
+CM = colormap(c);
+
+vd = [-0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5];
+StimeV = [1020, 317, 391, 492, 628, 770, 892];
+Jnum = 5;
+
+
+for i = 1:7
+    
+    Stime = StimeV(i);
+    tlbInd = find(log.Data.t>Stime);
+    tlbInd = tlbInd(1);
+    NoSP = 20; % number of steps to plot
+    stanceleg  = log.Data.stanceLeg';
+    % Find all left stance to right stance transitions 
+    LRt = find(diff(stanceleg)==-2);
+    % get 11 elements starting from Stime  
+    LRt = LRt(LRt>tlbInd);
+    LRt = LRt(1:NoSP+1);
+
+    for k = 1:NoSP
+        plot3(log.Data.t(LRt(k):LRt(k+1)) - log.Data.t(LRt(k)), ...
+              vd(i)*ones(1,LRt(k+1)-LRt(k)+1), u_motors(Jnum,LRt(k):LRt(k+1)),'linewidth',1,'color',CM(i,:));
+        drawnow();
+    end
+
+end
+
+%
+%% Plot joint trajectories of 10 continuous steps
+close all
+figure('Position',[300,100,1400,600]);
+hold on
+view([45 45]);
+grid on; box on;
+xlabel('Time (s)');
+ylabel('Desired Speed (m/s)');
+zlabel('Joint Trajectory (rad)');
+c = jet(7);
+CM = colormap(c);
+
+vd = [-0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5];
+StimeV = [1020, 317, 391, 492, 628, 770, 892];
+
+
+Jnum = 1;
+
+
+for i = 1:7
+    
+    Stime = StimeV(i);
+    tlbInd = find(log.Data.t>Stime);
+    tlbInd = tlbInd(1);
+    NoSP = 20; % number of steps to plot
+    stanceleg  = log.Data.stanceLeg';
+    % Find all left stance to right stance transitions 
+    LRt = find(diff(stanceleg)==-2);
+    % get 11 elements starting from Stime  
+    LRt = LRt(LRt>tlbInd);
+    LRt = LRt(1:NoSP+1);
+
+    for k = 1:NoSP
+%            plot(log.Data.t, hd_joint(k,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+%            plot(log.Data.t, h0_joint(k,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+        if k == 1
+              plot3(log.Data.t(LRt(k):LRt(k+1)) - log.Data.t(LRt(k)), ...
+              vd(i)*ones(1,LRt(k+1)-LRt(k)+1), hd_joint(Jnum,LRt(k):LRt(k+1)),'linewidth',2,'color',[0,0,0]);
+              drawnow();  
+        end    
+        plot3(log.Data.t(LRt(k):LRt(k+1)) - log.Data.t(LRt(k)), ...
+              vd(i)*ones(1,LRt(k+1)-LRt(k)+1), h0_joint(Jnum,LRt(k):LRt(k+1)),'linewidth',1,'color',CM(i,:));
+        drawnow();
+    end
+
+end
 %%
 figure
 hold on;

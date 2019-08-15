@@ -155,7 +155,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         thigh_compensation = 1;
         abduction_swing_com = 0;
         reduce_impact = 1;
-        keep_direction = 0;
+        keep_direction = 1;
         
         to_turn = 0;
         to_turn_prev = 1;
@@ -359,11 +359,11 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 %% get values
                 [qyaw, qpitch, qroll, dqyaw, dqpitch, dqroll] = IMU_to_Euler_v2(cassieOutputs.pelvis.vectorNav.orientation, cassieOutputs.pelvis.vectorNav.angularVelocity);
-                qa = CassieModule.getDriveProperty(cassieOutputs,'position');
+                qa  = CassieModule.getDriveProperty(cassieOutputs,'position');
                 dqa = CassieModule.getDriveProperty(cassieOutputs,'velocity');
-                qj = CassieModule.getJointProperty(cassieOutputs,'position');
+                qj  = CassieModule.getJointProperty(cassieOutputs,'position');
                 dqj = CassieModule.getJointProperty(cassieOutputs,'velocity');
-                qq = cassieOutputs.pelvis.vectorNav.orientation;
+                qq  = cassieOutputs.pelvis.vectorNav.orientation;
                 qaL = qa(1:5);
                 qaR = qa(6:10);
                 qjL =  qj(1:2);
@@ -512,6 +512,9 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                             err_incr = linspace(0,1e-9,length(obj.s_current_step(1:obj.kstep-1)));
 
 
+                            
+                            u_CurrentStep_interp = zeros(100,10);
+                            e_CurrentStep_interp  = zeros(100,10);
                             % Interpolation of the data structure (different channels of data are stored as coloum vectors)
                             u_CurrentStep_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.Torque_CurrentStep(:,1:obj.kstep-1)', s_interp); % 100x10
                             e_CurrentStep_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.Error_CurrentStep(:,1:obj.kstep-1,:)',  s_interp); % 100x10                       
@@ -519,28 +522,46 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                             obj.s_previous_step = s_interp;     
                             % This makes sure the filter always has the same input size
 
-                            % Moving-Average Zero  Filter
+                            % Moving-Average Zero Filter
                             windowSize = 5; 
                             b = (1/windowSize)*ones(1,windowSize);
                             a = 1;
 
-                            Torque_PreviousStep_F = zeros(100,10);
-                            Error_PreviousStep_F  = zeros(100,10);
+%                             Torque_PreviousStep_F = zeros(100,10);
+%                             Error_PreviousStep_F  = zeros(100,10);
                             
                             Torque_PreviousStep_F = filtfilt(b, a, u_CurrentStep_interp); % 100x10
                             Error_PreviousStep_F  = filtfilt(b, a, e_CurrentStep_interp); % 100x10
                             % The filter will treat each coloum of the data structure as
                             % a different channel of signals
-                            obj.Torque_PreviousStep = Torque_PreviousStep_F'; % 10x100
-                            obj.Error_PreviousStep  = Error_PreviousStep_F'; % 10x100;
+                            
+%                             Torque_PreviousStep_FT = zeros(10,100);
+%                             Error_PreviousStep_FT = zeros(10,100);       
+                            
+                            Torque_PreviousStep_FT = reshape(transpose(Torque_PreviousStep_F),10,100);
+                            Error_PreviousStep_FT = reshape(transpose(Error_PreviousStep_F),10,100);
+                            % Check whether or not the torque and error are
+                            % initilized
+                            if any(obj.Torque_PreviousStep(:)) 
+                                obj.Torque_PreviousStep = obj.Torque_PreviousStep*0.6 + Torque_PreviousStep_FT*0.4; % 10x100
+                                obj.Error_PreviousStep  = obj.Error_PreviousStep*0.6  + Error_PreviousStep_FT*0.4; % 10x100;
+                            else    
+                                obj.Torque_PreviousStep = Torque_PreviousStep_FT; % 10x100
+                                obj.Error_PreviousStep  = Error_PreviousStep_FT; % 10x100;
+                            end
 
-
-
-    %                         figure(1)
-    %                         hold on
-    %                         plot(u_CurrentStep_interp(:,4),'r');
-    %                         plot(obj.Torque_PreviousStep(4,:),'b')
-                        
+%                             if t>10
+%                                 figure(1)
+%                                 hold on
+%                                 plot(u_CurrentStep_interp(:,1),'red');
+%                                 plot(obj.Torque_PreviousStep(1,:),'red')
+%                                 plot(obj.Error_PreviousStep(1,:)*obj.Gamma_st_abu,'black');
+%                                 figure(2)
+%                                 hold on
+%                                 plot(u_CurrentStep_interp(:,6),'red');
+%                                 plot(obj.Torque_PreviousStep(6,:),'red')
+%                                 plot(obj.Error_PreviousStep(6,:)*obj.Gamma_sw_abu,'black');
+%                             end
                         end
                         
                         % clean current step data structure:
@@ -727,7 +748,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 e_CP_stance_abduction = 0;
                 u_OT_stance_abduction = 0;
                 
-                
+                u_CP = zeros(10,1);
+                e_CP = zeros(10,1);
                 %% Walking Controller
                 hd_original = zeros(10,1);
 %                 hd_original_FROST = zeros(10,1);
@@ -754,7 +776,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         
                            
                         % foot placement in frontal plane + add roll angle in outputs 
-                        dqy_b_avg_1 = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
+                        dqy_b_avg_1  = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
                         lateral_ftpl = (obj.Kfl_p*dqy_b_avg_1 + obj.Kfl_d*(dqy_b_avg_1 - obj.v_final_avgy) + abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);
                         
                         if sign(lateral_ftpl) == abduction_direction
@@ -763,14 +785,16 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                             p = obj.abduction_inward_gain;
                         end              
                         
-                        obj.hd(sw_abduction)  = obj.hd(sw_abduction)  +  p * lateral_ftpl * s_slow  + (obj.lateral_offset + obj.lateral_move)*s_slow  - qroll*s_slow ;
+                        obj.hd(sw_abduction)  = obj.hd(sw_abduction)  +  p * lateral_ftpl * s_slow  + (obj.lateral_offset + obj.lateral_move)*s_slow - qroll*s_slow ;
                         obj.dhd(sw_abduction) = obj.dhd(sw_abduction) +  p * lateral_ftpl * ds_slow + (obj.lateral_offset + obj.lateral_move)*ds_slow - qroll*ds_slow - dqroll*s_slow;
                         
                         
-                        obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.5*qroll;
-                        obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.5*qroll + 4.5*dqroll;                        
-                        
-                        
+                        obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.01*qroll*s_slow ;
+                        obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.01*qroll*s_slow  + 0.2*dqroll*s_slow;                        
+%                         obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.5*qroll;
+%                         obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.5*qroll + 4.5*dqroll;                            
+%                         obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.05*qroll*s_slow ;
+%                         obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.05*qroll*s_slow  + 0.5*dqroll*s_slow;                         
                         
                         % use hip yaw motor on swing leg to maintain the direction ( or not). 
                         if obj.to_turn ~=1 && obj.keep_direction
@@ -864,12 +888,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 
                      % Interpolate Multiple Sets of Data in One Pass (data must be stored as coloum vectors)
                      u_CP = interp1(obj.s_previous_step + num_diff, obj.Torque_PreviousStep', s_int);
-
+                     u_CP = reshape(u_CP,10,1); % reshape it to 10x1
                      if obj.s_previous_step(end) >= s + 0.02
                        e_CP = interp1(obj.s_previous_step + num_diff, obj.Error_PreviousStep', s_int + 0.02);
                      else
                        e_CP = obj.Error_PreviousStep(:,end);
                      end
+                     e_CP = reshape(e_CP,10,1); % reshape it to 10x1
                      
                      
                     
@@ -885,33 +910,30 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         
                          if RadioButton.SGA == -1  %t < 8
                              
-                             % Stance abduction compensation
+                             % Stance abduction constant compensation
                              s_CP_stance_abduc = YToolkits.bezier(obj.CP_StanceAbdu,s);
                              u(st_abduction) = u(st_abduction) + abduction_direction * s_CP_stance_abduc;% + u_torso_roll;
 
                          else  
                              
                              % Stance abduction compensation
-                             u_CP_stance_abduction = - clamp(u_CP(1), -180, 180); % Nm
-                             e_CP_stance_abduction = - clamp(e_CP(1), -2, 2); % rad
-                             u(st_abduction) = u(st_abduction) + u_CP_stance_abduction*s_superfast + obj.Gamma_st_abu*e_CP_stance_abduction; %  + u_torso_roll
+                             u_CP_stance_abduction = clamp(u_CP(1), -180, 180); % Nm
+                             e_CP_stance_abduction = clamp(e_CP(1), -5, 5); % rad
+                             u(st_abduction) = u(st_abduction) + abduction_direction * u_CP_stance_abduction*s_fast +  abduction_direction * obj.Gamma_st_abu*e_CP_stance_abduction; %  + u_torso_roll
 
-
-                             
                          end
                          
 
                          
                         if RadioButton.SGA == +1
                              % Swing abduction compensation              
-                             s_CP_swing_abduc  = YToolkits.bezier(obj.CP_SwingAbdu ,s);
                              
-                             u_CP_swing_abduction = - clamp(u_CP(6), -80, 80); % Nm
-                             e_CP_swing_abduction = - clamp(e_CP(6), -2, 2); % rad
-                             u(sw_abduction) = u(sw_abduction) + u_CP_swing_abduction*s_superfast + obj.Gamma_sw_abu*e_CP_swing_abduction; %  + u_torso_roll
+                             u_CP_swing_abduction = clamp(u_CP(6), -100, 100); % Nm
+                             e_CP_swing_abduction = clamp(e_CP(6), -5, 5); % rad
+                             u(sw_abduction) = u(sw_abduction) - abduction_direction * u_CP_swing_abduction*(1-s_fast) - abduction_direction * obj.Gamma_sw_abu*e_CP_swing_abduction; %  + u_torso_roll
                         
                         else    
-                             % Swing abduction compensation              
+                             % Swing abduction constant compensation              
                              s_CP_swing_abduc  = YToolkits.bezier(obj.CP_SwingAbdu ,s);
                              u(sw_abduction) = u(sw_abduction) - abduction_direction * s_CP_swing_abduc;
                         end     
@@ -994,7 +1016,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                              u_CP_stance_knee = clamp(u_CP(4), -20, 180); % Nm
                              e_CP_stance_knee = clamp(e_CP(4), -2, 2); % rad
 
-                             u(st_knee) = u(st_knee) + u_CP_stance_knee*s_superfast + obj.Gamma_st_knee*e_CP_stance_knee;
+                             u(st_knee) = u(st_knee) + u_CP_stance_knee + obj.Gamma_st_knee*e_CP_stance_knee;
                              
                          end
                          
@@ -1004,7 +1026,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                              % ILC swing knee compensation
                              u_CP_swing_knee = clamp(u_CP(9), -50, 50); % Nm
                              e_CP_swing_knee = clamp(e_CP(9), -2, 2); % rad
-                             u(sw_knee) = u(sw_knee) + u_CP_swing_knee*s_superfast + obj.Gamma_sw_knee*e_CP_swing_knee; 
+                             u(sw_knee) = u(sw_knee) + u_CP_swing_knee + obj.Gamma_sw_knee*e_CP_swing_knee; 
                         
                          else
                    
@@ -1035,17 +1057,22 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     
                     % in the data structure, stance joints are 1:5 and swing joints are 6:10    
                     if obj.stanceLeg == 1 % right stanceleg
-                        obj.Error_CurrentStep(1:5, obj.kstep)   =  obj.y_joint(6:10);
-                        obj.Error_CurrentStep(6:10, obj.kstep)  =  obj.y_joint(1:5);
-                        obj.Torque_CurrentStep(1:5, obj.kstep)  =  u(6:10);
-                        obj.Torque_CurrentStep(6:10, obj.kstep) =  u(1:5);
+                        % Not only legs are switched, but the direction
+                        % of the abuduction motors and yaw motors are
+                        % changed.
+                        obj.Error_CurrentStep([1,2,  6,7], obj.kstep)  =   obj.y_joint([6, 7, 1, 2]);
+                        obj.Error_CurrentStep([3:5, 8:10], obj.kstep)  =   obj.y_joint([8:10, 3:5]);
+                        
+                        obj.Torque_CurrentStep([1,2,  6,7], obj.kstep)  =  -u([6, 7, 1, 2]);
+                        obj.Torque_CurrentStep([3:5, 8:10], obj.kstep)  =   u([8:10, 3:5]);
+                        
+                        
                     else % left leg in stance
-                        obj.Error_CurrentStep(:, obj.kstep)  =  obj.y_joint;
-                        obj.Torque_CurrentStep(:, obj.kstep) =  u;
+                        obj.Error_CurrentStep(:, obj.kstep)  =   obj.y_joint;
+                        obj.Torque_CurrentStep(:, obj.kstep)  =   u;
                     end                         
                     
-
-
+                    
                     obj.s_current_step(obj.kstep) = s;
                     obj.kstep = obj.kstep + 1;
                 end
@@ -1248,8 +1275,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                
                 Data.hd_original = hd_original;
-                Data.Torque_CP = obj.Torque_CurrentStep(:, obj.kstep);
-                Data.Error_CP  = obj.Error_CurrentStep(:, obj.kstep);
+                Data.Torque_CP = u_CP;
+                Data.Error_CP  = e_CP;
                 
                 Data.RadioChannel = RadioButtonToChannel(RadioButton); % 16x1
                 

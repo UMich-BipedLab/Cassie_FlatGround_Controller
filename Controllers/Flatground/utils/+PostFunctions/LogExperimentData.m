@@ -93,7 +93,7 @@ user_input = inputdlg({'Date/Time','Setup','Results'}, 'Data Log', ...
 log.description.DateTime = user_input{1};
 log.description.Setup = user_input{2};
 log.description.Results = user_input{3};
-save('Log', 'log')
+save('Log', 'log') % save('Log', 'log', '-v7.3')
 % cd(root_dir);
 %%
 % Define intial pelvis state

@@ -13,13 +13,13 @@ c_Kp_yaw = 200;
 c_Kd_yaw = 4;
 
 
-c_Kp_abduction = 400;
+c_Kp_abduction = 1600;
 c_Kp_rotation = 800;
 c_Kp_thigh = 500;
 c_Kp_knee = 500;
 c_Kp_toe = 10;
 
-c_Kd_abduction = 10;
+c_Kd_abduction = 150;
 c_Kd_rotation = 10;
 c_Kd_thigh = 15;
 c_Kd_knee = 15;
@@ -59,8 +59,8 @@ c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 c_Kfs_p = 0.05;
 c_Kfs_d = 0.25;
 
-c_Kfl_p = 0.3;
-c_Kfl_d = 0.4;
+c_Kfl_p = 0.15;
+c_Kfl_d = 0.25;
 
 c_fil_vel_offset  = -0.02;
 % offset
@@ -71,7 +71,7 @@ c_stand_offset_exp = 0.00;
 
 % Switch from stand to walk
 c_shift_time = +YToolkits.ifelse(isSim,0.4,0.4);
-c_shift_distance = +YToolkits.ifelse(isSim,0.045,0.03);
+c_shift_distance = +YToolkits.ifelse(isSim,0.025,0.03);
 
 % Switch from walk to stand
 c_final_sw_abduction = 0.15;
@@ -90,15 +90,17 @@ c_toe_tilt_angle = 0.3;  % [rad] ~ 17.2 deg
 c_force_step_end_s = 1;
 
 
-c_CP_StanceKnee = [60, 280, -40, -20 20];
-c_CP_SwingKnee  = [0, 0, 0, 0, 0];
-c_CP_StanceAbdu = [0, 50, 30, 40, 0];
-c_CP_SwingAbdu  = [-5, -8, 20, 25, -5];
+c_CP_StanceKnee = [60, 280, -40, -20, 20];
+c_CP_SwingKnee  = [ 0,   0,   0,   0,  0];
+c_CP_StanceAbdu = [ 0,  70,  40,  60,  0];
+c_CP_SwingAbdu  = [-5,  -8,  10,  15, -5];
 
-c_Gamma_st_abu  = 50*0.01;
-c_Gamma_sw_abu  = 10*0.01;
+c_Gamma_st_abu  = 60;
+c_Gamma_sw_abu  = 60;
+
 c_Gamma_st_hip  = 50*0.01;
 c_Gamma_sw_hip  = 10*0.01;
+
 c_Gamma_st_knee = 150;
 c_Gamma_sw_knee = 150*0.01;
 
