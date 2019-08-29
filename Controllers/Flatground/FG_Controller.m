@@ -220,6 +220,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         v_final = zeros(2,1);
         v_final_avgy = 0;
         tp_last = 0; % how long does last step take
+        step_height = 0;
         
         sagittal_move = 0;
         lateral_move = 0;
@@ -475,6 +476,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                    (obj.walking_ini == 0 && obj.task_next == 1) % initial step
                     
                
+                qall_withoutyaw = qall;
+                qall_withoutyaw(4) = 0;
+                feetDistance = abs(RightToeBottomBack(qall_withoutyaw) - LeftToeBottomBack(qall_withoutyaw));
+                obj.step_height = feetDistance(3); % current set it to be positive; however, based on which leg 
+                % is switched to we should figure out the correct direction. 
+               
+               
                     if obj.walking_ini == 1 % when a step is finished during walking
                         obj.stanceLeg = - obj.stanceLeg;
                     else % initial step when the walking switch is triggered
@@ -653,7 +661,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 %% Get bezier coefficient for gait from Gaitlibrary obj.dqx_b_fil + obj.fil_vel_offset 
                 % For zero speed only obj.dqx_b_fil
-                obj.gaitparams= ControlPolicy( obj, GaitLibrary, obj.dqx_b_fil);
+                
+                obj.gaitparams= ControlPolicy( obj, GaitLibrary, obj.dqx_b_fil,t,obj.step_height);
                 
                 s_unsat = obj.s_unsat_prev + (t - obj.t_prev)*obj.gaitparams.ct;
                 s = min(s_unsat,1.05); % here s indicates the phase, 0 is the beginning of a step and 1 is the end of a step.
@@ -919,7 +928,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                              % Stance abduction compensation
                              u_CP_stance_abduction = clamp(u_CP(1), -180, 180); % Nm
                              e_CP_stance_abduction = clamp(e_CP(1), -5, 5); % rad
-                             u(st_abduction) = u(st_abduction) + abduction_direction * u_CP_stance_abduction*s_fast +  abduction_direction * obj.Gamma_st_abu*e_CP_stance_abduction; %  + u_torso_roll
+                             u(st_abduction) = u(st_abduction) + abduction_direction * u_CP_stance_abduction*s_fast +  abduction_direction * obj.Gamma_st_abu*e_CP_stance_abduction*s_fast; %  + u_torso_roll
 
                          end
                          
@@ -930,7 +939,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                              
                              u_CP_swing_abduction = clamp(u_CP(6), -100, 100); % Nm
                              e_CP_swing_abduction = clamp(e_CP(6), -5, 5); % rad
-                             u(sw_abduction) = u(sw_abduction) - abduction_direction * u_CP_swing_abduction*(1-s_fast) - abduction_direction * obj.Gamma_sw_abu*e_CP_swing_abduction; %  + u_torso_roll
+                             u(sw_abduction) = u(sw_abduction) - abduction_direction * u_CP_swing_abduction*(1-s_fast) - abduction_direction * obj.Gamma_sw_abu*e_CP_swing_abduction*(1-s_fast); %  + u_torso_roll
                         
                         else    
                              % Swing abduction constant compensation              
@@ -1293,12 +1302,25 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         end % stepImpl
         
         %% util functions
-        function gaitparams = ControlPolicy( obj,GaitLibrary, phi)
+        function gaitparams = ControlPolicy( obj,GaitLibrary, phi,t, step_height)
             % Saturate interpolation value
             phi = clamp(phi, GaitLibrary.Velocity(1,1), GaitLibrary.Velocity(1,end));
             % Interpolate gaits
-            HAlpha_R = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.RightStance.HAlpha, phi);
-            HAlpha_L = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.LeftStance.HAlpha, phi);
+%             HAlpha_R = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.RightStance.HAlpha, phi);
+%             HAlpha_L = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.LeftStance.HAlpha, phi);
+            
+            if t< 7
+                HAlpha_R = interp1(GaitLibrary.Velocity(1,56:66),GaitLibrary.RightStance.HAlpha(56:66,:,:), phi);
+                HAlpha_L = interp1(GaitLibrary.Velocity(1,56:66),GaitLibrary.LeftStance.HAlpha(56:66,:,:), phi);          
+            else
+                Sh = linspace(-0.15,0.15,11);
+                [~,Sh_id] = min(abs(Sh-step_height));
+                HAlpha_R = GaitLibrary.RightStance.HAlpha(74,:,:);
+                HAlpha_L = GaitLibrary.LeftStance.HAlpha(74,:,:); 
+                
+                HAlpha_R = interp1(GaitLibrary.Velocity(1,1+11*(Sh_id-1):11*Sh_id),GaitLibrary.RightStance.HAlpha(1+11*(Sh_id-1):11*Sh_id,:,:), phi);
+                HAlpha_L = interp1(GaitLibrary.Velocity(1,1+11*(Sh_id-1):11*Sh_id),GaitLibrary.LeftStance.HAlpha(1+11*(Sh_id-1):11*Sh_id,:,:), phi);  
+            end
             ct_R = 2.5; %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi); 1/0.4
             ct_L = 2.5; %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi);
             Op = 5;

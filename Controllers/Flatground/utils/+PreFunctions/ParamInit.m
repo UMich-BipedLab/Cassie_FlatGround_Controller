@@ -95,8 +95,8 @@ c_CP_SwingKnee  = [ 0,   0,   0,   0,  0];
 c_CP_StanceAbdu = [ 0,  70,  40,  60,  0];
 c_CP_SwingAbdu  = [-5,  -8,  10,  15, -5];
 
-c_Gamma_st_abu  = 60;
-c_Gamma_sw_abu  = 60;
+c_Gamma_st_abu  = 120;
+c_Gamma_sw_abu  = 120;
 
 c_Gamma_st_hip  = 50*0.01;
 c_Gamma_sw_hip  = 10*0.01;
