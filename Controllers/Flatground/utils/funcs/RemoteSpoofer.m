@@ -59,7 +59,7 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
             end
             
             if t > 3
-                RadioButton.LVA = 1;
+                RadioButton.LVA = 1;%0.03*(t-3); % forward speed
             end    
 %             if  t > 10
 %                  RadioButton.SCA = 1;  % knee compensation on 

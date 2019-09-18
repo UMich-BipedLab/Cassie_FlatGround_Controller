@@ -18,4 +18,3 @@ Simulink.fileGenControl('set',...
 root_dir = pwd;
 % Add all subfolders to MATLAB path
 addpath(genpath('./'));
-

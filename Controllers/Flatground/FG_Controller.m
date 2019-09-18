@@ -144,7 +144,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         s_prev = 0;
         s_unsat_prev = 0;
         dqy_b_start = 0;
-        gaitparams = struct( 'HAlpha',zeros(10,10),'ct',0);
+        gaitparams = struct( 'HAlpha',zeros(10,6),'ct',0);
         
         foot_placement = 1;
         pitch_torso_control = 1;
@@ -269,7 +269,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
     % PROTECTED METHODS =====================================================
     methods (Access = protected)
         
-        function [userInputs, Data] = stepImpl(obj, t, cassieOutputs, isSim, GaitLibrary, encoder_fil)
+        function [userInputs, Data] = stepImpl(obj, t, cassieOutputs, isSim, GaitLibrary, GaitLibrary_Ori, encoder_fil)
             %STEPIMPL System output and state update equations.
             
             %% Initialize --------------------------------------------------------
@@ -659,11 +659,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     sw_LL = sw_knee;
                 end           
                 
-                %% Get bezier coefficient for gait from Gaitlibrary obj.dqx_b_fil + obj.fil_vel_offset 
-                % For zero speed only obj.dqx_b_fil
+
                 
-                obj.gaitparams= ControlPolicy( obj, GaitLibrary, obj.dqx_b_fil,t,obj.step_height);
-                
+
+                %% Get the phase variables
                 s_unsat = obj.s_unsat_prev + (t - obj.t_prev)*obj.gaitparams.ct;
                 s = min(s_unsat,1.05); % here s indicates the phase, 0 is the beginning of a step and 1 is the end of a step.
                 
@@ -682,11 +681,18 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 send_fast = YToolkits.bezier(sendf_b,s);
                 dsend_fast = YToolkits.dbezier(sendf_b,s)*obj.gaitparams.ct;
                 
-                
                 ssf_b = [0,0,ones(1,50)];
                 s_superfast = YToolkits.bezier(ssf_b,s);
                                 
-
+                %% Get bezier coefficient for gait from Gaitlibrary obj.dqx_b_fil + obj.fil_vel_offset 
+                % For zero speed only obj.dqx_b_fil
+                % Get the desire joint values from the gait library. obj, GaitLibrary, phi, T, s
+                
+                % Send this signal to controller directly
+                T = 0.4;
+                
+                obj.gaitparams = ControlPolicy( obj, GaitLibrary, GaitLibrary_Ori, obj.dqx_b_fil, T, s, t);
+                
                 % estimating velocity
                 [dqx,dqy,dqz] = get_velocity_v3(obj,qall,dqall); % v1 toe joint; v2 toe bottom; v3 toe back; v4 toe front
                 % if the stance leg is off ground, set the velocity be 0 and let the velocity filter do the work
@@ -1302,41 +1308,104 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         end % stepImpl
         
         %% util functions
-        function gaitparams = ControlPolicy( obj,GaitLibrary, phi,t, step_height)
+        function gaitparams = ControlPolicy( obj, GaitLibrary, GaitLibrary_Ori, cur_speed, T, s , t)
             % Saturate interpolation value
-            phi = clamp(phi, GaitLibrary.Velocity(1,1), GaitLibrary.Velocity(1,end));
-            % Interpolate gaits
-%             HAlpha_R = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.RightStance.HAlpha, phi);
-%             HAlpha_L = interp1(GaitLibrary.Velocity(1,:),GaitLibrary.LeftStance.HAlpha, phi);
             
-            if t< 7
-                HAlpha_R = interp1(GaitLibrary.Velocity(1,56:66),GaitLibrary.RightStance.HAlpha(56:66,:,:), phi);
-                HAlpha_L = interp1(GaitLibrary.Velocity(1,56:66),GaitLibrary.LeftStance.HAlpha(56:66,:,:), phi);          
-            else
-                Sh = linspace(-0.15,0.15,11);
-                [~,Sh_id] = min(abs(Sh-step_height));
-                HAlpha_R = GaitLibrary.RightStance.HAlpha(74,:,:);
-                HAlpha_L = GaitLibrary.LeftStance.HAlpha(74,:,:); 
+            
+            HAlpha_R = zeros(10,6);
+            HAlpha_L = zeros(10,6);
+            
+            ct_R = 1/0.4;
+            ct_L = 1/0.4;
+            
+            if t > 10
+                xo_range = linspace(-0.2,0,50);
+                dxo_range = linspace(0,1,50);
                 
-                HAlpha_R = interp1(GaitLibrary.Velocity(1,1+11*(Sh_id-1):11*Sh_id),GaitLibrary.RightStance.HAlpha(1+11*(Sh_id-1):11*Sh_id,:,:), phi);
-                HAlpha_L = interp1(GaitLibrary.Velocity(1,1+11*(Sh_id-1):11*Sh_id),GaitLibrary.LeftStance.HAlpha(1+11*(Sh_id-1):11*Sh_id,:,:), phi);  
-            end
-            ct_R = 2.5; %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi); 1/0.4
-            ct_L = 2.5; %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi);
+%                 if t < 10
+%                    T_st = 0.45;
+%                 elseif t < 14
+%                    T_st = 0.35;
+%                 else
+%                    T_st = 0.25;
+                
+                   T_st = 0.45 - 0.2/50*(t-10);
+                
+%                 end   
+                    
+                   
+                   
+                avg_speed = sum(GaitLibrary.Velocity,3)./21;
+                Fd_id_A = abs(avg_speed-cur_speed) + abs(GaitLibrary.StrideTime - T_st);
+                [~,closestIndex] = min(Fd_id_A(:));
+                [I_row, I_col] = ind2sub(size(Fd_id_A),closestIndex);
+                
+                
+                x0 = xo_range(I_row); %-CurrentSpeed*T/2;
+                x0 = clamp(x0, -0.2, 0);
+                
+                dx0 = dxo_range(I_col);
+                dx0 = clamp(cur_speed, 0.05, 1);
+                % Interpolate gaits
+
+                
+                if obj.stanceLeg == 1
+
+                    HAlpha_R = reshape(GaitLibrary.RightStance(I_row,I_col,:),10,6);
+                    ct_R     = 1/GaitLibrary.StrideTime(I_row,I_col);
+%                     HAlpha_R = zeros(60,1);                    
+%                     for i = 1:60
+%                          HAlpha_R(i) = interp2(xo_range,dxo_range, GaitLibrary.RightStance(:,:,i),x0,dx0);    
+%                     end    
+%                     HAlpha_R = reshape(HAlpha_R, 10,6);
+%                     if sum(HAlpha_R(:)>100)
+%                        HAlpha_R =  reshape(GaitLibrary.RightStance(30,24,:),10,6);
+%                     end    
+%                     ct_R = 1/interp2(xo_range,dxo_range, GaitLibrary.StrideTime,x0,dx0); %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi); 1/0.4
+                else
+                    HAlpha_L = reshape(GaitLibrary.LeftStance(I_row,I_col,:),10,6);
+                    ct_L     = 1/GaitLibrary.StrideTime(I_row,I_col);
+%                     HAlpha_L = zeros(60,1);
+%                     for i = 1:60 % for all (5+1)*10 Bezier parameters
+%                          HAlpha_L(i) = interp2(xo_range,dxo_range, GaitLibrary.LeftStance(:,:,i),x0,dx0);    
+%                     end    
+%                     HAlpha_L = reshape(HAlpha_L, 10,6);
+%                     if sum(HAlpha_L(:)>100)
+%                        HAlpha_L =  reshape(GaitLibrary.LeftStance(30,24,:),10,6);
+%                     end   
+%                     ct_L =  1/interp2(xo_range,dxo_range, GaitLibrary.StrideTime,x0,dx0); %interp1(GaitLibrary.Velocity(1,:), GaitLibrary.ct, phi); 1/0.4
+                end    
+
+               
+
+            
+            else
+                
+                cur_speed = clamp(cur_speed, GaitLibrary_Ori.Velocity(1,1), GaitLibrary_Ori.Velocity(1,end));
+                % Interpolate gaits
+                HAlpha_R = interp1(GaitLibrary_Ori.Velocity(1,:),GaitLibrary_Ori.RightStance.HAlpha, cur_speed);
+                HAlpha_L = interp1(GaitLibrary_Ori.Velocity(1,:),GaitLibrary_Ori.LeftStance.HAlpha, cur_speed);
+                ct_R = interp1(GaitLibrary_Ori.Velocity(1,:), GaitLibrary_Ori.ct, cur_speed);
+                ct_L = interp1(GaitLibrary_Ori.Velocity(1,:), GaitLibrary_Ori.ct, cur_speed);
+                
+            end    
             Op = 5;
             
             if obj.stanceLeg == 1
-                gaitparams.HAlpha = reshape(HAlpha_R,10, Op+1);
+                gaitparams.HAlpha = reshape(HAlpha_R,10, 6);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/Op;
                 gaitparams.ct = ct_R;
             else
-                gaitparams.HAlpha = reshape(HAlpha_L,10, Op+1);
+                gaitparams.HAlpha = reshape(HAlpha_L,10, 6);
                 gaitparams.HAlpha(:,1) = obj.hd_last;
                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_L/Op;  % try to 
                 gaitparams.ct = ct_L;
             end
+                   
         end
+        
+        
         function [dqx,dqy,dqz] = get_velocity_v3(obj,q,dq)
             if obj.stanceLeg == 1
                 range = 14:20;
@@ -1436,13 +1505,14 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             %RESETIMPL Reset System object states.
         end % resetImpl
         
-        function [name_1, name_2, name_3, name_4, name_5]  = getInputNamesImpl(~)
+        function [name_1, name_2, name_3, name_4, name_5, name_6]  = getInputNamesImpl(~)
             %GETINPUTNAMESIMPL Return input port names for System block
             name_1 = 't';
             name_2 = 'cassieOutputs';
             name_3 = 'isSim';
             name_4 = 'GaitLibrary';
-            name_5 = 'encoder_fil';
+            name_5 = 'GaitLibrary_Ori';
+            name_6 = 'encoder_fil';
         end % getInputNamesImpl
         
         function [name_1, name_2] = getOutputNamesImpl(~)
