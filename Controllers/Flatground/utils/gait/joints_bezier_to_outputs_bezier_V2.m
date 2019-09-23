@@ -1,7 +1,7 @@
 
 % The order of the Bezier Polynomial
 % M = 5;
-M = 9;
+M = 5;
 
 
 s = linspace(0,1,30);
@@ -9,17 +9,24 @@ check_case = 1; % 1 is output position, 2 is output velocity, 3 is joint positio
 
 % GL = load('GaitLibrary_Omar_3.mat');
 % GL = load('GaitLibrary_v1.mat');
-GL = load('GL_PD_BO9_v1.mat');
+GL = load('2D_11_v2.mat');
 
-GL = GL.GaitLibrary;
+GL = GL.GL;
 GaitLibrary_joint.RightStance.HAlpha = zeros(length(GL),10,M+1);
 GaitLibrary_joint.LeftStance.HAlpha = zeros(length(GL),10,M+1);
 GaitLibrary_joint.Desired_Velocity = zeros(2,length(GL));
 GaitLibrary_joint.RightStance.ct = zeros(1,length(GL));
 GaitLibrary_joint.LeftStance.ct = zeros(1,length(GL));
+
+
+
 for i = 1:length(GL)
-    GaitLibrary_joint.RightStance.HAlpha(i,:,:) =  reshape(GL{i}.solution.params{1}.atime,10,M+1);
-    GaitLibrary_joint.LeftStance.HAlpha(i,:,:) =  reshape(GL{i}.solution.params{3}.atime,10,M+1);
+    
+%     GL{i}.gait(3).states       = MirrorGaitStates(GL{i}.gait(1).states);
+%     GL{i}.gait(3).params.atime = MirrorGaitParams(GL{i}.gait(1).params.atime);   
+    
+    GaitLibrary_joint.RightStance.HAlpha(i,:,:) =  reshape(GL{i}.gait(1).params.atime,10,M+1);
+    GaitLibrary_joint.LeftStance.HAlpha(i,:,:) =  reshape(GL{i}.gait(3).params.atime,10,M+1);
     GaitLibrary_joint.Desired_Velocity(:,i) = GL{i}.velocity;
 %     GaitLibrary_joint.RightStance.ct(i) = 1/GL{i}.solution.params{1}.ptime(1);
 %     GaitLibrary_joint.LeftStance.ct(i) = 1/GL{i}.solution.params{1}.ptime(1); 0.8???
@@ -170,12 +177,12 @@ end
 %% Get the torso angle
 for i = 1:length(GL)
     %Right Stance
-    yaw = GL{i}.solution.states{1}.x(4,:);
-    pitch = GL{i}.solution.states{1}.x(5,:);
-    roll = GL{i}.solution.states{1}.x(6,:);
-    dyaw = GL{i}.solution.states{1}.dx(4,:);
-    dpitch = GL{i}.solution.states{1}.dx(5,:);
-    droll = GL{i}.solution.states{1}.dx(6,:);
+    yaw = GL{i}.gait(1).states.x(4,:);
+    pitch = GL{i}.gait(1).states.x(5,:);
+    roll = GL{i}.gait(1).states.x(6,:);
+    dyaw = GL{i}.gait(1).states.dx(4,:);
+    dpitch = GL{i}.gait(1).states.dx(5,:);
+    droll = GL{i}.gait(1).states.dx(6,:);
     [yaw_fit,dyaw_fit,alpha_yaw_fit ] = points_to_fit_points( yaw,dyaw,1/GaitLibrary_joint.RightStance.ct(i),M );
     [pitch_fit,dpitch_fit,alpha_pitch_fit ] = points_to_fit_points( pitch,dpitch,1/GaitLibrary_joint.RightStance.ct(i),M );
     [roll_fit,droll_fit,alpha_roll_fit ] = points_to_fit_points( roll,droll,1/GaitLibrary_joint.RightStance.ct(i),M );
@@ -219,12 +226,12 @@ for i = 1:length(GL)
 %             hold off
 %     end
     % Left Stance
-    yaw = GL{i}.solution.states{3}.x(4,:);
-    pitch = GL{i}.solution.states{3}.x(5,:);
-    roll = GL{i}.solution.states{3}.x(6,:);
-    dyaw = GL{i}.solution.states{3}.dx(4,:);
-    dpitch = GL{i}.solution.states{3}.dx(5,:);
-    droll = GL{i}.solution.states{3}.dx(6,:);
+    yaw = GL{i}.gait(3).states.x(4,:);
+    pitch = GL{i}.gait(3).states.x(5,:);
+    roll = GL{i}.gait(3).states.x(6,:);
+    dyaw = GL{i}.gait(3).states.dx(4,:);
+    dpitch = GL{i}.gait(3).states.dx(5,:);
+    droll = GL{i}.gait(3).states.dx(6,:);
     [yaw_fit,dyaw_fit,alpha_yaw_fit ] = points_to_fit_points( yaw,dyaw,1/GaitLibrary_joint.LeftStance.ct(i),M );
     [pitch_fit,dpitch_fit,alpha_pitch_fit ] = points_to_fit_points( pitch,dpitch,1/GaitLibrary_joint.LeftStance.ct(i),M );
     [roll_fit,droll_fit,alpha_roll_fit ] = points_to_fit_points( roll,droll,1/GaitLibrary_joint.LeftStance.ct(i),M );
@@ -283,4 +290,4 @@ end
 % save('./Controllers/Yukai/mat/GaitLibrary_output/GaitLibrary_output_v1.mat','GaitLibrary_output')
 % save('./Controllers/Yukai/mat/GaitLibrary_output/GaitLibrary_output_Omar_torso_3.mat','GaitLibrary_output')
 
-save('C:\Users\RoahmLab\Documents\GitHub\Cassie_FlatGround_Controller\Controllers\Flatground\mat\GL_PD_BO9_v1F.mat','GaitLibrary_output')
+save('C:\Users\RoahmLab\Documents\GitHub\Cassie_FlatGround_Controller\Controllers\Flatground\mat\2D_11_GL.mat','GaitLibrary_output')
