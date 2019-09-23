@@ -9,7 +9,7 @@ check_case = 1; % 1 is output position, 2 is output velocity, 3 is joint positio
 
 % GL = load('GaitLibrary_Omar_3.mat');
 % GL = load('GaitLibrary_v1.mat');
-GL_Data = load('GaitLibrary_LIP_FROST_SOL_v3.mat');
+GL_Data = load('GaitLibrary_LIP_FROST_SOL_v4.mat');
 
 GaitLibrary_2D = cell(length(GL_Data.GL_2D),1);
 
@@ -82,4 +82,4 @@ for i = 1:length(GaitLibrary_2D)
 
 end
 
-save('C:\Users\RoahmLab\Documents\GitHub\Cassie_FlatGround_Controller\Controllers\Flatground\mat\GaitLibrary_LIP_v3.mat','GaitLibrary_2D_struct')
+save('C:\Users\RoahmLab\Documents\GitHub\Cassie_FlatGround_Controller\Controllers\Flatground\mat\GaitLibrary_LIP_v4.mat','GaitLibrary_2D_struct')

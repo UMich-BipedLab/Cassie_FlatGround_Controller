@@ -689,10 +689,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 % For zero speed only obj.dqx_b_fil
                 % Get the desire joint values from the gait library. obj, GaitLibrary, phi, T, s
                 
-                % Send this signal to controller directly
+                % Send this signal to controller directly obj.v_final_avgy 
                 T = 0.4;
                 
-                obj.gaitparams = ControlPolicy( obj, GaitLibrary, GaitLibrary_Ori, obj.dqx_b_fil, obj.v_final_avgy, T, s, t);
+                obj.gaitparams = ControlPolicy( obj, GaitLibrary, GaitLibrary_Ori, obj.dqx_b_fil, obj.dqy_b_fil, T, s, t);
                 
                 % estimating velocity
                 [dqx,dqy,dqz] = get_velocity_v3(obj,qall,dqall); % v1 toe joint; v2 toe bottom; v3 toe back; v4 toe front
@@ -1311,7 +1311,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         end % stepImpl
         
         %% util functions
-        function gaitparams = ControlPolicy( obj, GaitLibrary_2D, GaitLibrary_Ori, cur_speed_x,cur_speed_y, T, s , t)
+        function gaitparams = ControlPolicy( obj, GaitLibrary_2D, GaitLibrary_Ori, cur_speed_x, cur_speed_y, T, s , t)
             
             dxN = 31;
             dxo_range  = -linspace( 0.1,-0.2,dxN)*2./0.4;
@@ -1323,76 +1323,79 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 %             fields = fieldnames(GaitLibrary_2D);
 %             GaitLibrary = getfield(GaitLibrary_2D,fields{indY});
             
-            if t>5
-                [~, indY] = min(abs(dyo_range - 10*cur_speed_y));
+            if t < 10
+               GaitLibrary = GaitLibrary_2D.f_8;    
+                   
+            else    
+                [~, indY] = min(abs(dyo_range + 0.5*cur_speed_y));
                 
                 indY = clamp(indY, 1, 15);
                 switch indY
-                    case 1
-                      GaitLibrary = GaitLibrary_2D.f_15;                
-                    case 2
-                      GaitLibrary = GaitLibrary_2D.f_14;                     
-                    case 3
-                      GaitLibrary = GaitLibrary_2D.f_13;   
-                    case 4
-                      GaitLibrary = GaitLibrary_2D.f_12;                     
-                    case 5
-                      GaitLibrary = GaitLibrary_2D.f_11;                     
-                    case 6
-                      GaitLibrary = GaitLibrary_2D.f_10;                     
-                    case 7
-                      GaitLibrary = GaitLibrary_2D.f_9;                     
-                    case 8
-                      GaitLibrary = GaitLibrary_2D.f_8;  
-                    case 9
-                      GaitLibrary = GaitLibrary_2D.f_7;                    
-                    case 10
-                      GaitLibrary = GaitLibrary_2D.f_6;  
-                    case 11
-                      GaitLibrary = GaitLibrary_2D.f_5;                    
-                    case 12
-                      GaitLibrary = GaitLibrary_2D.f_4;                    
-                    case 13
-                      GaitLibrary = GaitLibrary_2D.f_3;  
-                    case 14
-                      GaitLibrary = GaitLibrary_2D.f_2;                    
-                    case 15
-                      GaitLibrary = GaitLibrary_2D.f_1;  
 %                     case 1
-%                       GaitLibrary = GaitLibrary_2D.f_1;                
+%                       GaitLibrary = GaitLibrary_2D.f_15;                
 %                     case 2
-%                       GaitLibrary = GaitLibrary_2D.f_2;                     
+%                       GaitLibrary = GaitLibrary_2D.f_14;                     
 %                     case 3
-%                       GaitLibrary = GaitLibrary_2D.f_3;   
+%                       GaitLibrary = GaitLibrary_2D.f_13;   
 %                     case 4
-%                       GaitLibrary = GaitLibrary_2D.f_4;                     
+%                       GaitLibrary = GaitLibrary_2D.f_12;                     
 %                     case 5
-%                       GaitLibrary = GaitLibrary_2D.f_5;                     
+%                       GaitLibrary = GaitLibrary_2D.f_11;                     
 %                     case 6
-%                       GaitLibrary = GaitLibrary_2D.f_6;                     
+%                       GaitLibrary = GaitLibrary_2D.f_10;                     
 %                     case 7
-%                       GaitLibrary = GaitLibrary_2D.f_7;                     
+%                       GaitLibrary = GaitLibrary_2D.f_9;                     
 %                     case 8
 %                       GaitLibrary = GaitLibrary_2D.f_8;  
 %                     case 9
-%                       GaitLibrary = GaitLibrary_2D.f_9;                    
+%                       GaitLibrary = GaitLibrary_2D.f_7;                    
 %                     case 10
-%                       GaitLibrary = GaitLibrary_2D.f_10;  
+%                       GaitLibrary = GaitLibrary_2D.f_6;  
 %                     case 11
-%                       GaitLibrary = GaitLibrary_2D.f_11;                    
+%                       GaitLibrary = GaitLibrary_2D.f_5;                    
 %                     case 12
-%                       GaitLibrary = GaitLibrary_2D.f_12;                    
+%                       GaitLibrary = GaitLibrary_2D.f_4;                    
 %                     case 13
-%                       GaitLibrary = GaitLibrary_2D.f_13;  
+%                       GaitLibrary = GaitLibrary_2D.f_3;  
 %                     case 14
-%                       GaitLibrary = GaitLibrary_2D.f_14;                    
+%                       GaitLibrary = GaitLibrary_2D.f_2;                    
 %                     case 15
-%                       GaitLibrary = GaitLibrary_2D.f_15;  
+%                       GaitLibrary = GaitLibrary_2D.f_1;  
+                    case 1
+                      GaitLibrary = GaitLibrary_2D.f_1;                
+                    case 2
+                      GaitLibrary = GaitLibrary_2D.f_2;                     
+                    case 3
+                      GaitLibrary = GaitLibrary_2D.f_3;   
+                    case 4
+                      GaitLibrary = GaitLibrary_2D.f_4;                     
+                    case 5
+                      GaitLibrary = GaitLibrary_2D.f_5;                     
+                    case 6
+                      GaitLibrary = GaitLibrary_2D.f_6;                     
+                    case 7
+                      GaitLibrary = GaitLibrary_2D.f_7;                     
+                    case 8
+                      GaitLibrary = GaitLibrary_2D.f_8;  
+                    case 9
+                      GaitLibrary = GaitLibrary_2D.f_9;                    
+                    case 10
+                      GaitLibrary = GaitLibrary_2D.f_10;  
+                    case 11
+                      GaitLibrary = GaitLibrary_2D.f_11;                    
+                    case 12
+                      GaitLibrary = GaitLibrary_2D.f_12;                    
+                    case 13
+                      GaitLibrary = GaitLibrary_2D.f_13;  
+                    case 14
+                      GaitLibrary = GaitLibrary_2D.f_14;                    
+                    case 15
+                      GaitLibrary = GaitLibrary_2D.f_15;  
                     otherwise
                       GaitLibrary = GaitLibrary_2D.f_8;   
                 end  
-            else
-                GaitLibrary = GaitLibrary_2D.f_8; 
+%             else
+%                 GaitLibrary = GaitLibrary_2D.f_8; 
             end     
                   
                   
@@ -1405,6 +1408,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             HAlpha_L = interp1(dxo_range,GaitLibrary.LeftStance.HAlpha, phi);
             ct_R = 1/0.4;
             ct_L = 1/0.4;
+            
+            
             if obj.stanceLeg == 1
                 gaitparams.HAlpha = reshape(HAlpha_R,10,6);
                 gaitparams.HAlpha(:,1) = obj.hd_last;

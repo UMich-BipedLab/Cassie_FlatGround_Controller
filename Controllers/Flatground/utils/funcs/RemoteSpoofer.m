@@ -51,16 +51,15 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
             RadioButton.SCA = - 1;  % knee compensation on 
             RadioButton.SDA = - 1;  % thigh compensation on
             RadioButton.SGA = - 1; % abduction compensation on 
-            RadioButton.LVA = 0;
+            RadioButton.LVA = 0;   % walking in place
             if t > 2 % switch to walking
-                RadioButton.SBA = 1;
-                RadioButton.SFA = 1;  % updating ILC
-                
+                RadioButton.SBA = 1;  % start walking
+                RadioButton.SFA = -1;  % updating ILC             
             end
             
             if t > 5
-                RadioButton.LVA = 0;%0.03*(t-3); % forward speed
-%                 RadioButton.LHA = 0.1; % lateral speed vy
+                RadioButton.LVA = 0.1;%0.03*(t-3); % forward speed
+                RadioButton.LHA = 0.5; % lateral speed vy
             end    
 %             if  t > 10
 %                  RadioButton.SCA = 1;  % knee compensation on 

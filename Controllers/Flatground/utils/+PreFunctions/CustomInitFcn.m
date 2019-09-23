@@ -9,7 +9,7 @@ cassieDataBus = eval(cassieDataBusInfo.busName);
 % Create GaitLibrary Bus
 % GL = load('GaitLibrary_2D_Velocity_FootHeight_v1.mat');  % desired trajectories
 % GL = load('GaitLibrary_LIP_v2.mat');  % desired trajectories
-GL = load('GaitLibrary_LIP_v3.mat');
+GL = load('GaitLibrary_LIP_v4.mat');
 GaitLibrary = GL.GaitLibrary_2D_struct;
 
 cassieGaitLibraryBusInfo = Simulink.Bus.createObject(GaitLibrary);

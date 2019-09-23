@@ -56,8 +56,8 @@ c_u_thigh_cp = +YToolkits.ifelse(isSim,-10,-15);
 c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 
 % footplacment
-c_Kfs_p = 0.05;
-c_Kfs_d = 0.25;
+c_Kfs_p = 0.01;
+c_Kfs_d = 0.05;
 
 c_Kfl_p = 0.15;
 c_Kfl_d = 0.25;

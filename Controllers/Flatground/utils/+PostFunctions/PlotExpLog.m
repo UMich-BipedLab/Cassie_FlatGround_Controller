@@ -82,8 +82,8 @@ TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'};
 
 
 
-   tlb = 40;
-   tup = 45;%3383;
+   tlb = 10;
+   tup = 12;%3383;
    
    
    tlbInd = find(Time>tlb);
@@ -95,8 +95,6 @@ TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'};
 for k = 1:5
     
 
-   
-   
    figure('Position',[k*100,600,800,600]);
    
    % position plot
