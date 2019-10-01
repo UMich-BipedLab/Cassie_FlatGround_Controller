@@ -144,7 +144,7 @@ Data.torso_vz_fil_test = 0;
 Data.torso_vx_b_fil_test = 0;
 Data.torso_vy_b_fil_test = 0;
 Data.torso_vz_b_fil_test = 0;
-
+Data.dqy_b_avg_1 = 0;
 Data.l_abduction_vx = 0;
 Data.l_abduction_vy = 0;
 Data.l_abduction_vz = 0;

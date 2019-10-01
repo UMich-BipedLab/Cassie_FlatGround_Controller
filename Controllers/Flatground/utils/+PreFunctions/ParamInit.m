@@ -56,8 +56,8 @@ c_u_thigh_cp = +YToolkits.ifelse(isSim,-10,-15);
 c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 
 % footplacment
-c_Kfs_p = 0.01;
-c_Kfs_d = 0.05;
+c_Kfs_p = 0.2;
+c_Kfs_d = 0.35;
 
 c_Kfl_p = 0.15;
 c_Kfl_d = 0.25;
@@ -80,7 +80,7 @@ c_pre_final_sw_abduction = -0.01;
 
 c_stance_thre_ub = 200;
 c_stance_thre_lb = 100;
-c_lateral_velocity_weight = 1;
+c_lateral_velocity_weight = 0.6;
 c_init_lateral_velocity = 0.05;
 c_abduction_inward_gain = 1;
 c_joint_filter_choice = 1; % Mikhail's filter is 0
