@@ -30,8 +30,8 @@ function [q, status] = testLegIK(leftFootTransform, rightFootTransform)
   % Check the number of input arguments
   if nargin == 0
     % Define the desired foot positions
-    leftFootTransform = Transform3d(Vector3d(0, 0.135, -1.0));
-    rightFootTransform = Transform3d(Vector3d(0, -0.135, -1.0));
+    leftFootTransform = Transform3d(Vector3d(0, 0.135, -1));
+    rightFootTransform = Transform3d(Vector3d(0, -0.135, -1));
   end % if
   
   % Update the desired foot transforms in the inverse kinematics problem

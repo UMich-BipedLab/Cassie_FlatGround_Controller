@@ -17,8 +17,6 @@ GaitLibrary_joint.RightStance.ct = zeros(1,numel(GL));
 GaitLibrary_joint.LeftStance.ct = zeros(1,numel(GL));
 
 
-
-
     for i = 1:numel(GL)
 
         GaitLibrary_joint.RightStance.HAlpha(i,:,:) =  reshape(GL{i}.gait(1).params.atime,10,M+1);

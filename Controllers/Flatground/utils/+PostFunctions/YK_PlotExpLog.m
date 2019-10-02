@@ -110,8 +110,6 @@ tlbInd = tlbInd(1);
 tupInd = find(log.Data.t<tup);
 tupInd = tupInd(end);
 
-
-
 for k = 1:5
     
    figure('Position',[k*300,100,1600,1200]);

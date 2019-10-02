@@ -249,4 +249,7 @@ Data.computer_time = 0;
 Data.Torque_CP = zeros(10,1);
 Data.Error_CP  = zeros(10,1);
 Data.RadioChannel = zeros(16,1);
+
+
+Data.lateral_ftpl = 0;
 end

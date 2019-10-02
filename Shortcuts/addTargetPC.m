@@ -16,9 +16,9 @@
 
 % Add target to Simulink Real-Time
 try
-  target = SimulinkRealTime.addTarget('CassieV3');
+  target = SimulinkRealTime.addTarget('Cassie');
 catch
-  target = SimulinkRealTime.getTargetSettings('CassieV3');
+  target = SimulinkRealTime.getTargetSettings('Cassie');
 end
 
 % Host-to-Target communication
