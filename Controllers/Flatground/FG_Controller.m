@@ -121,6 +121,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
     end
     % PRIVATE PROPERTIES ====================================================
     properties (Access = private)
+        
+
         Kp = zeros(10,1);
         Kd = zeros(10,1);
         stanceLeg = 1;
@@ -178,6 +180,9 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         com_pos_x_fil = 0;
         com_pos_y_fil = 0;
         com_pos_z_fil = 0;
+        
+        com_roll_fil = 0;
+        com_roll_cur = 0;
         
         
         pitch_des_fil = 0;
@@ -272,7 +277,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
     % PROTECTED METHODS =====================================================
     methods (Access = protected)
         
-        function [userInputs, Data] = stepImpl(obj, t, cassieOutputs, isSim, GaitLibrary, GaitLibrary_Ori, encoder_fil)
+        function [userInputs, Data] = stepImpl(obj, t, cassieOutputs, isSim, GaitLibrary, GaitLibrary_Ori, encoder_fil, LinuxData)
             %STEPIMPL System output and state update equations.
             
             %% Initialize --------------------------------------------------------
@@ -360,6 +365,18 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             
             %% begin calculation
             if    t > 0.1 && obj.begin ==1
+                
+                
+                %% Add EKF information to the system
+                % x y z yaw pitch roll
+                % process data from ekf:
+%                 R = YukaiToolkits.Angles.Quaternion_to_Matrix(cassieOutputs.pelvis.vectorNav.orientation);
+%                 Rz = YukaiToolkits.Angles.Rz(LinuxData.state.q(4)); % yaw angle
+%                 % torso velocity in the body frame -> world frame -> yaw
+%                 % frame
+%                 I_Vel =  R * LinuxData.inekf.velocity;
+%                 BI_Vel = Rz' * I_Vel;
+                
                 
                 %% get values
                 [qyaw, qpitch, qroll, dqyaw, dqpitch, dqroll] = IMU_to_Euler_v2(cassieOutputs.pelvis.vectorNav.orientation, cassieOutputs.pelvis.vectorNav.angularVelocity);
@@ -472,6 +489,12 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 end
                 
                 
+                
+                
+                
+                
+                
+                
                 % || obj.walking_ini == 0
                 % what happens when a step end and a new step begin.
                 if (obj.s_prev >=0.5 && swing_grf >obj.stance_thre_ub && obj.task == 1) || ...
@@ -513,8 +536,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 %                         end    
                         
                         
-                        % corp the data to correct sizes
-                        if (obj.kstep ~= 1) && (RadioButton.SFA == 1)
+                        % corp the data to correct sizes (RadioButton.SFA == 1)
+                        if (obj.kstep ~= 1) && 0
                             % first step switched from standing & use SF to
                             % stop updating.
                                                 
@@ -785,16 +808,18 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         
                         % foot placement in saggital plane + add pitch angle in outputs 
                         obj.hd(sw_LA) = obj.hd(sw_LA)   + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*s_slow  + qpitch*s_slow;
-                        obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*ds_slow + qpitch*ds_slow + dqpitch*s_slow;
+                        obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*ds_slow + qpitch*ds_slow + dqpitch*ds_slow;
                         
                         % Modify the desired stance leg angle (stance hip joint and stance knee joint) to stablize the pitch motion of the torso
-                        obj.hd(st_LA)  = obj.hd(st_LA)   - ( 0.001 * obj.Kp_pitch * qpitch  + 0.002 * obj.Kd_pitch * dqpitch  )*s_fast  ;
-                        obj.dhd(st_LA) = obj.dhd(st_LA)  - ( 0.001 * obj.Kp_pitch * qpitch  + 0.002 * obj.Kd_pitch * dqpitch  )*ds_fast ;                       
-                        
+                        % obj.hd(st_LA)  = obj.hd(st_LA)   - ( 0.001 * obj.Kp_pitch * qpitch  + 0.002 * obj.Kd_pitch * dqpitch  )*s_fast  ;
+                        % obj.dhd(st_LA) = obj.dhd(st_LA)  - ( 0.001 * obj.Kp_pitch * qpitch  + 0.002 * obj.Kd_pitch * dqpitch  )*ds_fast ;                       
+                        obj.hd(st_LA)  = obj.hd(st_LA)   - ( qpitch*s_slow  + dqpitch*s_slow );
+                        obj.dhd(st_LA) = obj.dhd(st_LA)  - ( qpitch*ds_slow + dqpitch*ds_slow );                            
                            
                         % foot placement in frontal plane + add roll angle in outputs 
                         obj.dqy_b_avg_1  = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
-                        lateral_ftpl = (obj.Kfl_p*(obj.dqy_b_avg_1 - obj.lateral_move_fil) + obj.Kfl_d*(obj.dqy_b_avg_1 - obj.v_final_avgy))*min(1.5*s,1);
+                        lateral_ftpl = (  obj.Kfl_p*(obj.dqy_b_avg_1 - obj.lateral_move_fil) + ...
+                                          obj.Kfl_d*(obj.dqy_b_avg_1 - obj.v_final_avgy)            )*min(1.5*s,1);
                         %+ abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);
                         
                         if sign(lateral_ftpl) == abduction_direction
@@ -803,13 +828,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                             p = obj.abduction_inward_gain;
                         end              
                         
-                        obj.hd(sw_abduction)  = obj.hd(sw_abduction)  +  p * lateral_ftpl * s_slow  + (obj.lateral_offset)*s_slow - qroll*s_slow ;
+                        obj.hd(sw_abduction)  = obj.hd(sw_abduction)  +  p * lateral_ftpl * s_slow  + (obj.lateral_offset)*s_slow  - qroll*s_slow ;
                         obj.dhd(sw_abduction) = obj.dhd(sw_abduction) +  p * lateral_ftpl * ds_slow + (obj.lateral_offset)*ds_slow - qroll*ds_slow - dqroll*s_slow;
                         
-                        
-                        obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.01*qroll*s_slow ;
-                        obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.01*qroll*s_slow  + 0.2*dqroll*s_slow;    
-                        
+%                         obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.01*qroll*s_slow ;
+%                         obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.01*qroll*s_slow  + 0.2*dqroll*s_slow;    
+                        obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  qroll*s_slow ;
+                        obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  qroll*ds_slow  + dqroll*ds_slow;                           
                         
 %                         obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.5*qroll;
 %                         obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.5*qroll + 4.5*dqroll;                            
@@ -1322,59 +1347,46 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             else
                LT_2D = GaitLibrary_2D.LT_2D_Left; % size(21,31,15,2); 
             end    
-               
+      
+            dxr = GaitLibrary_2D.dxo_range'; %31x1
+            dyr = GaitLibrary_2D.dyo_range'; %14x1
+            
             Sid = linspace(0,1,21);
-            S_cur = s;
+            S_cur = clamp(s,0,1);
             LT_2D_s = interp1(Sid, LT_2D, S_cur);  % size(1,31,15,2);
             LT_2D_s = squeeze(LT_2D_s); % size(31,15,2);
+            
+            LT_2D_s_x = reshape(LT_2D_s(:,7,1),31,1);
+            LT_2D_s_y = reshape(LT_2D_s(15,:,2),14,1);
 
             %%
-            vx_cur = clamp(cur_speed_x,-0.5,1);
-            vy_cur = clamp(cur_speed_y,-0.35,0.35);
+            vx_cur = clamp(cur_speed_x,min(LT_2D_s_x),max(LT_2D_s_y));
+            vy_cur = clamp(cur_speed_y,min(LT_2D_s_y),max(LT_2D_s_y)); % check this and see if I can use larger boundaries;
 
-            LT_2D_cur = zeros(31,14,2);
-            LT_2D_cur(:,:,1) = vx_cur;
-            LT_2D_cur(:,:,2) = vy_cur;
+            Vsp_x  = interp1(LT_2D_s_x,dxr,vx_cur);
+            Vsp_y  = interp1(LT_2D_s_y,dyr,vy_cur);
             
-            %ErrSp = vecnorm(LT_2D_s - LT_2D_cur,2,3);
-            ErrSp = abs(LT_2D_s - LT_2D_cur);
-            ErrSp = sum(ErrSp,3);
-            [M,I] = sort(ErrSp(:)); % use column representation
-            [row,col] = ind2sub(size(ErrSp),I(1:4));
-            
-            Tw = abs(M(1:4));
-            W = zeros(4,1);
-            W(1) = (Tw(2)+Tw(3)+Tw(4))/sum(Tw)/3;
-            W(2) = (Tw(1)+Tw(3)+Tw(4))/sum(Tw)/3;
-            W(3) = (Tw(1)+Tw(2)+Tw(4))/sum(Tw)/3;
-            W(4) = (Tw(1)+Tw(2)+Tw(3))/sum(Tw)/3;
+                               
             ct_R = 1/0.4;
             ct_L = 1/0.4;
             
-            Vsp = zeros(2,1);
-            dxr = GaitLibrary_2D.dxo_range;
-            dyr = GaitLibrary_2D.dyo_range;
-            Vsp(1) = W(1)*dxr(row(1)) + W(2)*dxr(row(2)) + ...
-                     W(3)*dxr(row(3)) + W(4)*dxr(row(4));
-            Vsp(2) = W(1)*dyr(col(1)) + W(2)*dyr(col(2)) + ...
-                     W(3)*dyr(col(3)) + W(4)*dyr(col(4));
-            
-            
             if obj.stanceLeg == 1
                 HAlpha_R = GaitLibrary_2D.RightStance.HAlpha;
-                HAlpha_R_dx = interp1(dxr,HAlpha_R,Vsp(1)); % 31x15x10x6
+                HAlpha_R_dx = interp1(dxr,HAlpha_R,Vsp_x); % 31x14x10x6
                 HAlpha_R_dx = squeeze(HAlpha_R_dx); %
-                HAlpha_R_dx_dy = interp1(dyr,HAlpha_R_dx,Vsp(2)); % 31x15x10x6
+                HAlpha_R_dx_dy = interp1(dyr,HAlpha_R_dx,Vsp_y); % 31x14x10x6
                 HAlpha_R_Cur = squeeze(HAlpha_R_dx_dy); %
                 gaitparams.HAlpha = HAlpha_R_Cur;
+
                 gaitparams.HAlpha(:,1) = obj.hd_last;
                 gaitparams.HAlpha(:,2) = obj.hd_last + obj.dhd_last/ct_R/obj.bezier_degree;
                 gaitparams.ct = ct_R;
             else
+                
                 HAlpha_L = GaitLibrary_2D.LeftStance.HAlpha;
-                HAlpha_L_dx = interp1(dxr,HAlpha_L,Vsp(1)); % 31x15x10x6
+                HAlpha_L_dx = interp1(dxr,HAlpha_L,Vsp_x); % 31x14x10x6
                 HAlpha_L_dx = squeeze(HAlpha_L_dx); %
-                HAlpha_L_dx_dy = interp1(dyr,HAlpha_L_dx,Vsp(2)); % 31x15x10x6
+                HAlpha_L_dx_dy = interp1(dyr,HAlpha_L_dx,Vsp_y); % 31x14x10x6
                 HAlpha_L_Cur = squeeze(HAlpha_L_dx_dy); %
                 gaitparams.HAlpha = HAlpha_L_Cur;
                 gaitparams.HAlpha(:,1) = obj.hd_last;
@@ -1492,6 +1504,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             name_4 = 'GaitLibrary';
             name_5 = 'GaitLibrary_Ori';
             name_6 = 'encoder_fil';
+            name_7 = 'LinuxData';
         end % getInputNamesImpl
         
         function [name_1, name_2] = getOutputNamesImpl(~)

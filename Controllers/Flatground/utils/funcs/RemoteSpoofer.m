@@ -74,11 +74,11 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
              
             RadioButton.LSA = 1; % full leg length
             
-%             if t < 0.5
-%                 RadioButton.SFA = 0; % InEKF is off
-%             else
-%                 RadioButton.SFA = 1; % InEKF is on
-%             end    
+            if t < 0.5
+                RadioButton.SFA = 0; % InEKF is off
+            else
+                RadioButton.SFA = 1; % InEKF is on
+            end    
             cassieOutputs.pelvis.radio.channel = RadioButtonToChannel(RadioButton);
 
 
