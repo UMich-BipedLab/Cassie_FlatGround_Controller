@@ -250,6 +250,11 @@ Data.Torque_CP = zeros(10,1);
 Data.Error_CP  = zeros(10,1);
 Data.RadioChannel = zeros(16,1);
 
-
 Data.lateral_ftpl = 0;
+
+
+Data.I_Vel = zeros(3,1);
+Data.EKF_v = zeros(3,1);
+Data.EKF_q = zeros(20,1);
+Data.EKF_dq = zeros(20,1);
 end

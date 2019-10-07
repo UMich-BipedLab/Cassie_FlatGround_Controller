@@ -13,13 +13,13 @@ c_Kp_yaw = 200;
 c_Kd_yaw = 4;
 
 
-c_Kp_abduction = 1600;
+c_Kp_abduction = 600;
 c_Kp_rotation = 800;
 c_Kp_thigh = 500;
 c_Kp_knee = 500;
 c_Kp_toe = 10;
 
-c_Kd_abduction = 150;
+c_Kd_abduction = 10;
 c_Kd_rotation = 10;
 c_Kd_thigh = 15;
 c_Kd_knee = 15;
@@ -56,13 +56,13 @@ c_u_thigh_cp = +YToolkits.ifelse(isSim,-10,-15);
 c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 
 % footplacment
-c_Kfs_p = 0.15;
-c_Kfs_d = 0.45;
+c_Kfs_p = 0.1;
+c_Kfs_d = 0.2;
 
-c_Kfl_p = 0.35;
-c_Kfl_d = 0.45;
+c_Kfl_p = 0.1;
+c_Kfl_d = 0.15;
 
-c_fil_vel_offset  = -0.02;
+c_fil_vel_offset  = 0;
 % offset
 c_sagittal_offset_exp = 0.000; %0.04
 c_lateral_offset_exp = 0.000;
@@ -86,7 +86,7 @@ c_abduction_inward_gain = 1;
 c_joint_filter_choice = 1; % Mikhail's filter is 0
 c_standing_switch_time = 0.4;
 
-c_toe_tilt_angle = 0.3;  % [rad] ~ 17.2 deg
+c_toe_tilt_angle   = 0;  % [rad] ~ 17.2 deg
 c_force_step_end_s = 1;
 
 
@@ -104,7 +104,7 @@ c_Gamma_sw_hip  = 10*0.01;
 c_Gamma_st_knee = 150;
 c_Gamma_sw_knee = 150*0.01;
 
-c_com_bp = 0.01;
+c_com_bp = 0.05;
 
 c_sagittal_speed = 0;
 

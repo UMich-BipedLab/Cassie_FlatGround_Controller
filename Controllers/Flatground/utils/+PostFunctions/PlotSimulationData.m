@@ -81,8 +81,8 @@ stanceleg  = reshape(Data.stanceLeg.Data, 1,DataL);
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
 
-tlb = 5;
-tup = 10; %3383;
+tlb = 10;
+tup = 15; %3383;
 
 
 tlbInd = find(Time>tlb);
@@ -94,7 +94,7 @@ tupInd = tupInd(end);
 for k = 1:5
     
 
-   figure('Position',[k*100,600,800,600]);
+   figure('Position',[k*100,100,800,600]);
    
    % position plot
    ax1 = subplot(3,1,1);

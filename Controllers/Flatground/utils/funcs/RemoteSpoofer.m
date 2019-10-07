@@ -58,8 +58,8 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
             end
             
             if t > 5
-                RadioButton.LVA = 0;%0.03*(t-3); % forward speed
-                RadioButton.LHA = 0; % lateral speed vy
+                RadioButton.LVA = 0.6;%0.03*(t-3); % forward speed
+                RadioButton.LHA = 0.3; %0 lateral speed vy
             end    
 %             if  t > 10
 %                  RadioButton.SCA = 1;  % knee compensation on 
@@ -72,6 +72,8 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
 %                 RadioButton.SGA = 1;
 %             end 
              
+
+
             RadioButton.LSA = 1; % full leg length
             
             if t < 0.5
@@ -79,6 +81,7 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
             else
                 RadioButton.SFA = 1; % InEKF is on
             end    
+            
             cassieOutputs.pelvis.radio.channel = RadioButtonToChannel(RadioButton);
 
 
