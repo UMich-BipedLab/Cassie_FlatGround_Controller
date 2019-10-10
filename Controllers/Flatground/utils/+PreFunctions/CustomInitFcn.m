@@ -31,6 +31,18 @@ LinuxData = getLinuxDataStruct();
 CassieLinuxDataBusInfo = Simulink.Bus.createObject(LinuxData);
 CassieLinuxDataBus = eval(CassieLinuxDataBusInfo.busName);
 
-% fname = which('all_buses.m');
-% delete(fname)
-% Simulink.Bus.save([root_dir '\all_buses.m'])
+
+% Create GaitLibrary Data
+GLData = PreFunctions.Construct_GLData;
+cassieGLDataBusInfo = Simulink.Bus.createObject(GLData);
+cassieGLDataBus = eval(cassieGLDataBusInfo.busName);
+
+
+% MocapData = getMocapDataStruct();
+% CassieLinuxDataBusInfo = Simulink.Bus.createObject(MocapData);
+% CassieMocapDataBus = eval(CassieLinuxDataBusInfo.busName);
+
+fname = which('all_buses.m');
+delete(fname)
+Simulink.Bus.save([root_dir '\all_buses.m'])
+

@@ -19,7 +19,7 @@ classdef ProcessUdpPacket < ...
     % Maximum allowed time between incoming UDP packets [s]
     heartbeatInterval = 0.01
     % Number of bytes in header
-    HeaderLength = 0
+    HeaderLength = 2
     % Number of bytes in the incoming CassieLinuxData data
     CassieLinuxDataLength = 0
   end % nontunable properties

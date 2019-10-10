@@ -81,8 +81,8 @@ stanceleg  = reshape(Data.stanceLeg.Data, 1,DataL);
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
 
-tlb = 10;
-tup = 15; %3383;
+tlb = 5;
+tup = 10; %3383;
 
 
 tlbInd = find(Time>tlb);

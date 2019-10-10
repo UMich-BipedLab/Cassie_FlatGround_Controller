@@ -1,4 +1,4 @@
-function Data = Construt_Data()
+function Data = Construct_Data()
 
 
 % walking

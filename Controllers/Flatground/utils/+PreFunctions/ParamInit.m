@@ -56,11 +56,11 @@ c_u_thigh_cp = +YToolkits.ifelse(isSim,-10,-15);
 c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 
 % footplacment
-c_Kfs_p = 0.1;
-c_Kfs_d = 0.2;
+c_Kfs_p = 0.05;
+c_Kfs_d = 0.08;
 
-c_Kfl_p = 0.1;
-c_Kfl_d = 0.15;
+c_Kfl_p = 0.25;
+c_Kfl_d = 0.50;
 
 c_fil_vel_offset  = 0;
 % offset
@@ -70,8 +70,8 @@ c_turning_offset_exp = 0;
 c_stand_offset_exp = 0.00;
 
 % Switch from stand to walk
-c_shift_time = +YToolkits.ifelse(isSim,0.4,0.4);
-c_shift_distance = +YToolkits.ifelse(isSim,0.025,0.03);
+c_shift_time     = +YToolkits.ifelse(isSim,0.5,0.4);
+c_shift_distance = +YToolkits.ifelse(isSim,0.045,0.03);
 
 % Switch from walk to stand
 c_final_sw_abduction = 0.15;
@@ -81,10 +81,10 @@ c_pre_final_sw_abduction = -0.01;
 c_stance_thre_ub = 200;
 c_stance_thre_lb = 100;
 c_lateral_velocity_weight = 1;
-c_init_lateral_velocity = 0.05;
-c_abduction_inward_gain = 1;
-c_joint_filter_choice = 1; % Mikhail's filter is 0
-c_standing_switch_time = 0.4;
+c_init_lateral_velocity   = 0.1;
+c_abduction_inward_gain   = 1;
+c_joint_filter_choice     = 1; % Mikhail's filter is 0
+c_standing_switch_time    = 0.40;
 
 c_toe_tilt_angle   = 0;  % [rad] ~ 17.2 deg
 c_force_step_end_s = 1;

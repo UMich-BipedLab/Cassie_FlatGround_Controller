@@ -14,34 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CASSIE_LINUX_DATA_T_H
-#define CASSIE_LINUX_DATA_T_H
+#ifndef CASSIE_MOCAP_DATA_T_H
+#define CASSIE_MOCAP_DATA_T_H
 
-#define CASSIE_LINUX_DATA_T_PACKED_LEN 70
+#define CASSIE_MOCAP_DATA_T_PACKED_LEN 12
 
 #include <stdbool.h>
 
 typedef struct {
-  double torque[10];
-  short telemetry[9];
-} cassie_user_in_t;
-
-typedef struct {
-  cassie_user_in_t userInputs;
   double x;
   double y;
   double z;
-} cassie_linux_data_t;
+} cassie_mocap_data_t;
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pack_cassie_linux_data_t(const cassie_linux_data_t *bus, unsigned char *bytes);
-void unpack_cassie_linux_data_t(const unsigned char *bytes, cassie_linux_data_t *bus);
+void pack_cassie_mocap_data_t(const cassie_mocap_data_t *bus, unsigned char *bytes);
+void unpack_cassie_mocap_data_t(const unsigned char *bytes, cassie_mocap_data_t *bus);
 
 #ifdef __cplusplus
 }
 #endif
-#endif // CASSIE_LINUX_DATA_T_H
+#endif // CASSIE_MOCAP_DATA_T_H
