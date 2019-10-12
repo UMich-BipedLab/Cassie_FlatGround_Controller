@@ -17,7 +17,7 @@
 #ifndef CASSIE_LINUX_DATA_T_H
 #define CASSIE_LINUX_DATA_T_H
 
-#define CASSIE_LINUX_DATA_T_PACKED_LEN 70
+#define CASSIE_LINUX_DATA_T_PACKED_LEN 326
 
 #include <stdbool.h>
 
@@ -27,10 +27,28 @@ typedef struct {
 } cassie_user_in_t;
 
 typedef struct {
+  int type;
+  double Kff1;
+  double Kff2;
+  double motorPositionsDesired[10];
+  double motorVelocitiesDesired[10];
+} struct0_T;
+
+typedef struct {
+  int enabled;
+  double velocity[3];
+} struct1_T;
+
+typedef struct {
+  double q[20];
+  double dq[20];
+} struct2_T;
+
+typedef struct {
   cassie_user_in_t userInputs;
-  double x;
-  double y;
-  double z;
+  struct0_T control;
+  struct1_T inekf;
+  struct2_T state;
 } cassie_linux_data_t;
 
 
