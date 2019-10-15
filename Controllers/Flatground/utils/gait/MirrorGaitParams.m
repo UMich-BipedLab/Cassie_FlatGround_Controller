@@ -9,5 +9,5 @@ function gaitLeft = MirrorGaitParams(gaitRight)
     
     gaitLeft = a.*gaitLeft;
     
-    gaitLeft = reshape(gaitLeft, 1, 60);
+    %gaitLeft = reshape(gaitLeft, 1, 60);
 end

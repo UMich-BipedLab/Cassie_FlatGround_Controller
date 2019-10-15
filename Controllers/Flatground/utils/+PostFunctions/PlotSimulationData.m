@@ -113,10 +113,13 @@ for k = 1:5
 
    ps = plot(Data.t.Time(stanceleg~=1),Ns(stanceleg~=1),'o','MarkerSize',1,'MarkerEdgeColor',[17 17 17]./256 ,'MarkerFaceColor',[17 17 17]./256);
    
-   p1 = plot(Data.t.Time, hd_joint(k+5,:),'linewidth',2,'color',[202/256,100/256,73/256]);
-   p2 = plot(Data.t.Time, h0_joint(k+5,:),'linewidth',2,'color',[0/256,114/256,189/256]);
-   
-   
+   if k >2
+        p1 = plot(Data.t.Time, hd_joint(k+5,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+        p2 = plot(Data.t.Time, h0_joint(k+5,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   else
+        p1 = plot(Data.t.Time, -hd_joint(k+5,:),'linewidth',2,'color',[202/256,100/256,73/256]);
+        p2 = plot(Data.t.Time, -h0_joint(k+5,:),'linewidth',2,'color',[0/256,114/256,189/256]);
+   end
    
    p1.Color(4) = 0.2;   
    p2.Color(4) = 0.2;  

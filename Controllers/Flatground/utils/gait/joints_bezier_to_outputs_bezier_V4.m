@@ -20,7 +20,7 @@ GaitLibrary_joint.LeftStance.ct = zeros(sGL(1),sGL(2));
 for i = 1:sGL(1)
    for j = 1:sGL(2)
         GaitLibrary_joint.RightStance.HAlpha(i,j,:,:) =  reshape(GL{i,j}.gait(1).params.atime,10,M+1);
-        GaitLibrary_joint.LeftStance.HAlpha(i,j,:,:) =  reshape(GL{i,j}.gait(3).params.atime,10,M+1);
+        GaitLibrary_joint.LeftStance.HAlpha(i,j,:,:)  =  reshape(GL{i,j}.gait(3).params.atime,10,M+1);
         GaitLibrary_joint.Desired_Velocity(:,i,j) = GL{i,j}.velocity;
 
         GaitLibrary_joint.RightStance.ct(i,j) = 1/0.4;

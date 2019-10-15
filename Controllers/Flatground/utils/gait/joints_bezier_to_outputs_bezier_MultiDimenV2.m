@@ -39,8 +39,8 @@ for m = 1:NoIx
         if ~isempty(LIPsol_curEx{m,n})
             % make sure the right stance phase (3) is symmetrical to the left
             % stance phase (1)
-            LIPsol_curEx{m,n}.gait(3).states       = MirrorGaitStates(LIPsol_curEx{m,n}.gait(1).states);
-            LIPsol_curEx{m,n}.gait(3).params.atime = MirrorGaitParams(LIPsol_curEx{m,n}.gait(1).params.atime); % atime 60x1
+            %LIPsol_curEx{m,n}.gait(3).states       = MirrorGaitStates(LIPsol_curEx{m,n}.gait(1).states);
+            %LIPsol_curEx{m,n}.gait(3).params.atime = MirrorGaitParams(LIPsol_curEx{m,n}.gait(1).params.atime); % atime 60x1
             % compute the average speed if this does not exist 
             LIPsol_curEx{m,n}.velocity = LIPsol_curEx{m,n}.gait(3).states.dx(1:2,:);
             

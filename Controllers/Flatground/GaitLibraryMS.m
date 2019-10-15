@@ -1,4 +1,4 @@
-classdef GaitLibraryMS <matlab.System & matlab.system.mixin.Propagates & matlab.system.mixin.SampleTime %#codegen
+ classdef GaitLibraryMS <matlab.System & matlab.system.mixin.Propagates & matlab.system.mixin.SampleTime %#codegen
     % Untitled Add summary here
     %
     % This template includes the minimum set of functions required
@@ -54,8 +54,8 @@ classdef GaitLibraryMS <matlab.System & matlab.system.mixin.Propagates & matlab.
             LT_2D_s = interp1(Sid, LT_2D, S_cur);  % size(1,31,15,2);
             LT_2D_s = squeeze(LT_2D_s); % size(31,15,2);
             
-            LT_2D_s_x = reshape(LT_2D_s(:,7,1),31,1);
-            LT_2D_s_y = reshape(LT_2D_s(15,:,2),14,1);
+            LT_2D_s_x = reshape(LT_2D_s(:,(length(dyr)+1)/2,1),length(dxr),1); % have to make sure these values are monotonic (no crossing each other at zero average vy speed)
+            LT_2D_s_y = reshape(LT_2D_s(11,:,2),length(dyr),1);
 
             %%
             vx_cur = clamp(cur_speed_x,min(LT_2D_s_x),max(LT_2D_s_y));

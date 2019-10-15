@@ -84,6 +84,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         
         CP_StanceKnee;
         CP_SwingKnee;
+        CP_StanceHip;
+        CP_SwingHip;        
         CP_StanceAbdu;
         CP_SwingAbdu;
         
@@ -470,6 +472,12 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 end
                              
                 
+                %% Zhenyu
+                if obj.s_prev >= 0.8 % the delay in the gait library block will create additonal oscillations if this is not updating early enough.
+                    obj.hd_last  = obj.hd; % save the desired output at the end of a step. It is used to reset the first 2 bezier coefficient in next step to smooth the torque.
+                    obj.dhd_last = obj.dhd;  
+                end    
+                %%
                 
                 % || obj.walking_ini == 0
                 % what happens when a step end and a new step begin.
@@ -813,42 +821,52 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         %obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_p*(BI_Vel(1) - Vsp_x -obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(BI_Vel(1) - Vsp_x)   + EKF_dpitch)*ds_slow;    
                         
                         
-                        obj.hd(sw_LA)  = obj.hd(sw_LA)  + (obj.Kfs_d*(BI_Vel(1) - gaitparams.Vsp_x) + obj.Kfs_p*(obj.avg_stepSpeed(1) - obj.tg_velocity_x_fil)  + obj.sagittal_offset  + EKF_pitch)*s_slow ;
-                        obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_d*0.1*(BI_Vel(1) - gaitparams.Vsp_x) + obj.Kfs_p*0.1*(obj.avg_stepSpeed(1) - obj.tg_velocity_x_fil)  + obj.sagittal_offset  + EKF_dpitch)*ds_slow;                        
+%                         obj.hd(sw_LA)  = obj.hd(sw_LA)  + (    obj.Kfs_d*(BI_Vel(1) - gaitparams.Vsp_x) ...
+%                                                              + obj.Kfs_p*(BI_Vel(1) - obj.tg_velocity_x_fil)  ...
+%                                                              + obj.Kfs_d*(BI_Vel(1) - obj.v_final(1)) ...
+%                                                              + obj.sagittal_offset  + EKF_pitch ...
+%                                                            )*s_slow ;
+%                                                        
+%                         obj.dhd(sw_LA) = obj.dhd(sw_LA) + (    obj.Kfs_d*(BI_Vel(1) - gaitparams.Vsp_x) ...
+%                                                              + obj.Kfs_p*(BI_Vel(1) - obj.tg_velocity_x_fil) ...
+%                                                              + obj.Kfs_d*(BI_Vel(1) - obj.v_final(1)) ...
+%                                                              + obj.sagittal_offset  + EKF_dpitch ...
+%                                                            )*ds_slow;           
+
+                        obj.hd(sw_LA) = obj.hd(sw_LA)   + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*s_slow  + qpitch*s_slow;
+                        obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*ds_slow + qpitch*ds_slow + dqpitch*s_slow;
                         
-                        % Modify the desired stance leg angle (stance hip joint and stance knee joint) to stablize the pitch motion of the torso
-                        % obj.hd(st_LA)  = obj.hd(st_LA)   - ( 0.001 * obj.Kp_pitch * qpitch  + 0.002 * obj.Kd_pitch * dqpitch  )*s_fast  ;
-                        % obj.dhd(st_LA) = obj.dhd(st_LA)  - ( 0.001 * obj.Kp_pitch * qpitch  + 0.002 * obj.Kd_pitch * dqpitch  )*ds_fast ;                       
+                        % Modify the desired stance leg angle (stance hip joint and stance knee joint) to stablize the pitch motion of the torso                      
                         obj.hd(st_LA)  = obj.hd(st_LA)  + ( - EKF_pitch)*s_slow  ;
                         obj.dhd(st_LA) = obj.dhd(st_LA) + ( - EKF_dpitch)*ds_slow ;                            
-                           
+                              
                         % foot placement in frontal plane + add roll angle in outputs 
-                        % obj.dqy_b_avg_1  = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
-                        lateral_ftpl_p =  (obj.Kfl_p*(BI_Vel(2) - gaitparams.Vsp_y) + abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);
-                        lateral_ftpl_d =  (obj.Kfl_d*(BI_Vel(2) - gaitparams.Vsp_y) + abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);              
-                                      
-                                      
                         %obj.dqy_b_avg_1  = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
-                        %lateral_ftpl = (  obj.Kfl_p*(BI_Vel(2) - Vsp_y - obj.lateral_move_fil) + ...
-                        %                  obj.Kfl_d*(BI_Vel(2) - Vsp_y - obj.lateral_move_fil)     + abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);                                      
-                        %+
-                        %abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1); - obj.lateral_move_fil
+                        % lateral_ftpl_p =  (obj.Kfl_p*(BI_Vel(2) - gaitparams.Vsp_y)*abduction_direction)*min(1.5*s,1);
+                        % lateral_ftpl_d =  (obj.Kfl_d*(BI_Vel(2) - gaitparams.Vsp_y)*abduction_direction)*min(1.5*s,1);      
+                        obj.dqy_b_avg_1 = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
+                        lateral_ftpl = (obj.Kfl_p*obj.dqy_b_avg_1 + obj.Kfl_d*(obj.dqy_b_avg_1 - obj.v_final_avgy) + abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);
                         
-                        if sign(lateral_ftpl_p) == abduction_direction
+                        
+                        %lateral_ftpl_p =  (obj.Kfl_p*(BI_Vel(2) - gaitparams.Vsp_y)  )*min(1.5*s,1);
+                        %lateral_ftpl_d =  (obj.Kfl_d*(BI_Vel(2) - gaitparams.Vsp_y)*abduction_direction)*min(1.5*s,1);     
+
+                        if sign(lateral_ftpl) == abduction_direction
                             p = 1;
                         else
                             p = obj.abduction_inward_gain;
                         end              
+
+                        obj.hd(sw_abduction) = obj.hd(sw_abduction) +   (p * lateral_ftpl  + obj.lateral_offset + obj.lateral_move - EKF_roll)*s_slow  ;
+                        obj.dhd(sw_abduction) = obj.dhd(sw_abduction) + (p * lateral_ftpl  + obj.lateral_offset + obj.lateral_move - EKF_droll)*ds_slow;
                         
-                        obj.hd(sw_abduction)  = obj.hd(sw_abduction)  +  (p * lateral_ftpl_p   + obj.lateral_offset  - EKF_roll )*s_slow ;
-                        obj.dhd(sw_abduction) = obj.dhd(sw_abduction) +  (p * lateral_ftpl_d   + obj.lateral_offset  - EKF_droll)*s_slow;
+                        %obj.hd(sw_abduction)  = obj.hd(sw_abduction)  +  (p * lateral_ftpl_p   + obj.lateral_offset - EKF_roll )*s_slow;
+                        %obj.dhd(sw_abduction) = obj.dhd(sw_abduction) +  (p * lateral_ftpl_d   + obj.lateral_offset - EKF_droll)*ds_slow;
+
+                        obj.hd(st_abduction)  = obj.hd(st_abduction)  + (EKF_roll)*s_slow   ;
+                        obj.dhd(st_abduction) = obj.dhd(st_abduction) + (EKF_droll)*ds_slow;          
                         
-%                         obj.hd(sw_abduction)  = obj.hd(sw_abduction)  +  p * lateral_ftpl_p * s_slow  + obj.lateral_offset)*s_slow  - EKF_roll*s_slow ;
-%                         obj.dhd(sw_abduction) = obj.dhd(sw_abduction) +  p * lateral_ftpl_d * ds_slow + (obj.lateral_offset)*ds_slow - EKF_roll*ds_slow - EKF_droll*s_slow;                        
-%                         obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.01*qroll*s_slow ;
-%                         obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.01*qroll*s_slow  + 0.2*dqroll*s_slow;    
-                        obj.hd(st_abduction)  =  obj.hd(st_abduction)  + (obj.Kfl_p*(BI_Vel(2) - gaitparams.Vsp_y)  +  EKF_roll )*s_slow ;
-                        obj.dhd(st_abduction) =  obj.dhd(st_abduction) + (obj.Kfl_d*(BI_Vel(2) - gaitparams.Vsp_y)  +  EKF_droll )*ds_slow;                           
+                        
                         
 %                         obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.5*qroll;
 %                         obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.5*qroll + 4.5*dqroll;                            
@@ -868,7 +886,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 
                     end
                     % prevent sw abduction from hitting AR's safety bound
-                    obj.hd(sw_abduction) = median([obj.ActuatorLimits(sw_abduction,1) + 0.1,obj.hd(sw_abduction),obj.ActuatorLimits(sw_abduction,2) - 0.1]);
+                    % obj.hd(sw_abduction) = median([obj.ActuatorLimits(sw_abduction,1) + 0.1,obj.hd(sw_abduction),obj.ActuatorLimits(sw_abduction,2) - 0.1]);
                                
                     %% Preparation for standing
                     if obj.stanceLeg == -1 && obj.to_stand_step_count >= 1.99 % left stance leg (second step) shift the COM to the right
@@ -914,28 +932,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     u = - obj.Kp.*obj.y_joint - obj.Kd.*obj.dy_joint; % not final torque, some compensation for gravity will be added, the torque on stance hip roll and stance hip pitch will be replaced.
                     
                           
-                    %% Torso Torque Control
-                    
-                    if 0
-                        
-                        % bring them back to test the knee joint tracking only.
-                        u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
-                        u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
 
-                        %if t < 10
-                            if obj.pitch_torso_control == 1
-                                u(3) = (1 - s_L)*u(3) + s_L*u_torso_pitch;
-                                u(8) = (1 - s_R)*u(8) + s_R*u_torso_pitch;
-
-                            end
-
-                            if obj.roll_torso_control == 1
-                                u(1) = (1 - s_L)*u(1) + s_L*u_torso_roll;
-                                u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
-                            end
-                        %end 
-                    
-                    end
 
                     %% Compensation initial handling
 %                      s_int = s;
@@ -1012,7 +1009,6 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     % when SD button is at +1, use ILC for both stance and
                     % swing hip compensation
 
-                    
                     if obj.thigh_compensation == 1
                         
                         % Stance knee compensation
@@ -1020,7 +1016,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                              % stance thigh compensation using a predefined
                              % fuction:
                              % Constant stance thigh compensation
-                             u(st_thigh) = u(st_thigh) + (-15) * s_fast;% + u_torso_roll;
+                             s_CP_stance_hip  = YToolkits.bezier(obj.CP_StanceHip ,s);
+                             u(st_thigh) = u(st_thigh) + s_CP_stance_hip;% + u_torso_roll;
                              % u(st_thigh) = u(st_thigh) + obj.u_thigh_cp*s_fast;
                              
 %                         else  
@@ -1040,13 +1037,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 % 
 %                         else
                              % Constant swing thigh compensation
-                             u(sw_thigh) = u(sw_thigh) + obj.u_thigh_cp*(1-s_fast);
+                             s_CP_swing_hip  = YToolkits.bezier(obj.CP_SwingHip ,s);
+                             u(sw_thigh) = u(sw_thigh) + s_CP_swing_hip;
                             
-%                         end     
-                        
-                        
-                        
-                    
+%                         end                        
                     end
                      
                                      
@@ -1093,11 +1087,35 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 
                     end
                     
+                    
+                    %% Torso Torque Control
+                    
+                    if 0                   
+                        % bring them back to test the knee joint tracking only.
+                        u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
+                        u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
+
+                        if t > 10
+                            if obj.pitch_torso_control == 1
+                                u(3) = (1 - s_L)*u(3) + s_L*u_torso_pitch;
+                                u(8) = (1 - s_R)*u(8) + s_R*u_torso_pitch;
+
+                            end
+
+                            if obj.roll_torso_control == 1
+                                u(1) = (1 - s_L)*u(1) + s_L*u_torso_roll;
+                                u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
+                            end
+                        end 
+                    
+                    end                    
+                    
                     %% Toe compensation
                     toe_com = 1;
                    
                     if toe_com == 1
-                       u(st_toe) = u(st_toe) + 5*s_slow;
+                       u(st_toe) = u(st_toe) + 5*s_slow  + obj.Kfs_p*(obj.avg_stepSpeed(1) - obj.tg_velocity_x_fil) ...
+                                                         + obj.Kfs_d*(BI_Vel(1) - obj.v_final(1)  );
                        u(sw_toe) = u(sw_toe) + 0;
                     end 
                                                    
