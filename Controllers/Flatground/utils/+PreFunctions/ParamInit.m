@@ -57,10 +57,10 @@ c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 
 % footplacment
 c_Kfs_p = 0.05;
-c_Kfs_d = 0.05;
+c_Kfs_d = 0.15;
 
-c_Kfl_p = 0.3;
-c_Kfl_d = 0.3;
+c_Kfl_p = 0.55;
+c_Kfl_d = 0.75;
 
 c_fil_vel_offset  = 0;
 
@@ -71,8 +71,8 @@ c_turning_offset_exp = 0;
 c_stand_offset_exp = 0.00;
 
 % Switch from stand to walk
-c_shift_time     = +YToolkits.ifelse(isSim,0.5,0.4);
-c_shift_distance = +YToolkits.ifelse(isSim,0.045,0.03);
+c_shift_time     = +YToolkits.ifelse(isSim,0.4,0.4);
+c_shift_distance = +YToolkits.ifelse(isSim,0.04,0.04);
 
 % Switch from walk to stand
 c_final_sw_abduction = 0.15;

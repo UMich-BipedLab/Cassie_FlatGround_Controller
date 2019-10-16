@@ -1,5 +1,29 @@
 
   <Object type="Desktop.Xpc.Designer.InstrumentPanel, Desktop.Xpc.Designer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="InstrumentPanel1" children="Controls">
+    <Object type="MW.Instruments.NumericDisplay, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericDisplay2" children="Controls">
+      <Property name="BindingSrcType">None</Property>
+      <Property name="OutputValue">0</Property>
+      <Property name="BindingSrcPath">
+      </Property>
+      <Property name="BindingSrcObject" />
+      <Property name="TargetName">
+      </Property>
+      <Property name="Size">100, 25</Property>
+      <Property name="Location">1110, 866</Property>
+      <Property name="Name">NumericDisplay2</Property>
+    </Object>
+    <Object type="MW.Instruments.NumericDisplay, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericDisplay1" children="Controls">
+      <Property name="BindingSrcType">None</Property>
+      <Property name="OutputValue">0</Property>
+      <Property name="BindingSrcPath">
+      </Property>
+      <Property name="BindingSrcObject" />
+      <Property name="TargetName">
+      </Property>
+      <Property name="Size">100, 25</Property>
+      <Property name="Location">1110, 835</Property>
+      <Property name="Name">NumericDisplay1</Property>
+    </Object>
     <Object type="System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="GroupBox7" children="Controls">
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label83" children="Controls">
         <Property name="Text">Stance</Property>
@@ -981,5 +1005,5 @@
       <Property name="Location">1263, 234</Property>
       <Property name="Name">NumericEntry16</Property>
     </Object>
-    <Property name="ClientSize">2560, 1440</Property>
+    <Property name="ClientSize">3440, 1440</Property>
   </Object>

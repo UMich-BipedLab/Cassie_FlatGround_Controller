@@ -372,16 +372,20 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 qaR = qa(6:10);
                 qjL = qj(1:2);
                 qjR = qj(4:5);
-                qsL = getSpringDeflectionAngle(qaL(4),qjL(1),qjL(2));
-                qsR = getSpringDeflectionAngle(qaR(4),qjR(1),qjR(2));
-                    
+%                 qsL = getSpringDeflectionAngle(qaL(4),qjL(1),qjL(2));
+%                 qsR = getSpringDeflectionAngle(qaR(4),qjR(1),qjR(2));
+                qsL = getSpringDeflectionAngleV2(qaL(4),qjL(1),qjL(2));
+                qsR = getSpringDeflectionAngleV2(qaR(4),qjR(1),qjR(2));  
+                
                 % Get current velocities
                 dqaL =  dqa(1:5);
                 dqaR =  dqa(6:10);
                 dqjL =  dqj(1:2);
                 dqjR =  dqj(4:5);
-                dqsL = getSpringDeflectionRate(dqaL(4),dqjL(1),dqjL(2));
-                dqsR = getSpringDeflectionRate(dqaR(4),dqjR(1),dqjR(2));
+%                 dqsL = getSpringDeflectionRate(dqaL(4),dqjL(1),dqjL(2));
+%                 dqsR = getSpringDeflectionRate(dqaR(4),dqjR(1),dqjR(2));
+                dqsL = getSpringDeflectionRateV2(qaL(4),qjL(1),qjL(2),dqaL(4),dqjL(1),dqjL(2));
+                dqsR = getSpringDeflectionRateV2(qaR(4),qjR(1),qjR(2),dqaR(4),dqjR(1),dqjR(2));
                 
                 % assign the value
                 q_abduction_R = qaR(1);
@@ -446,7 +450,21 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     GRF_L = [0;0];
                     GRF_R = [0;0];
                 end
+                
+%                 GRF_v = [GRF_L(2) GRF_R(2) ];
+%                 [ s_L, s_R ] = obj.get_s_LR(GRF_v); % s is normalized between 0 and 1, 0 means the leg is in air and 1 means leg is on ground.
+%                 s_LR = [s_L; s_R];
+                if isSim == 2
+                    GRF_L(2) = dqj(3);
+                    GRF_R(2) = dqj(6);
+                end
+                
                 GRF_v = [GRF_L(2) GRF_R(2) ];
+%                 obj.GRF_vL_history(2:end) = obj.GRF_vL_history(1:end-1);
+%                 obj.GRF_vL_history(1) = GRF_L(2);
+%                 obj.GRF_vR_history(2:end) = obj.GRF_vR_history(1:end-1);
+%                 obj.GRF_vR_history(1) = GRF_R(2);
+                [Fs1R, Fs2R, Fs1L, Fs2L] = get_spring_force(obj,qsR,qsL);
                 [ s_L, s_R ] = obj.get_s_LR(GRF_v); % s is normalized between 0 and 1, 0 means the leg is in air and 1 means leg is on ground.
                 s_LR = [s_L; s_R];
 
@@ -800,358 +818,126 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 %% Walking Controller
                 hd_original = zeros(10,1);
                 lateral_ftpl = 0;
-%                 hd_original_FROST = zeros(10,1);
-                % obj.gaitparams_fil.HAlpha = obj.gaitparams_fil.HAlpha*0.5 + obj.gaitparams.HAlpha*0.5;
+
+                                %% walking
                 if obj.task == 1 % walking
                     % Compute desired outputs ( here the outputs dose not
                     % include torso orientation. the outputs will be
                     % modified later
                     obj.hd = YToolkits.bezier(gaitparams.HAlpha,s);
-                    
-                    [ hd_original, ~] = get_IK(obj,obj.hd,obj.dhd);
                     obj.dhd = YToolkits.dbezier(gaitparams.HAlpha,s)*gaitparams.ct;
-                    
-                    %% swing leg foot placement
-                    if obj.foot_placement ==1                         
-                        
+                    % swing leg foot placement
+                    if obj.foot_placement ==1
                         % foot placement in saggital plane + add pitch angle in outputs 
-                        %obj.hd(sw_LA) = obj.hd(sw_LA)   + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*s_slow  + qpitch*s_slow;
-                        %obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*ds_slow + qpitch*ds_slow + dqpitch*ds_slow;
-                        %obj.hd(sw_LA)  = obj.hd(sw_LA)  + (obj.Kfs_p*(BI_Vel(1) - Vsp_x -obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(BI_Vel(1) - Vsp_x)   + EKF_pitch)*s_slow ;
-                        %obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_p*(BI_Vel(1) - Vsp_x -obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(BI_Vel(1) - Vsp_x)   + EKF_dpitch)*ds_slow;    
-                        
-                        
-%                         obj.hd(sw_LA)  = obj.hd(sw_LA)  + (    obj.Kfs_d*(BI_Vel(1) - gaitparams.Vsp_x) ...
-%                                                              + obj.Kfs_p*(BI_Vel(1) - obj.tg_velocity_x_fil)  ...
-%                                                              + obj.Kfs_d*(BI_Vel(1) - obj.v_final(1)) ...
-%                                                              + obj.sagittal_offset  + EKF_pitch ...
-%                                                            )*s_slow ;
-%                                                        
-%                         obj.dhd(sw_LA) = obj.dhd(sw_LA) + (    obj.Kfs_d*(BI_Vel(1) - gaitparams.Vsp_x) ...
-%                                                              + obj.Kfs_p*(BI_Vel(1) - obj.tg_velocity_x_fil) ...
-%                                                              + obj.Kfs_d*(BI_Vel(1) - obj.v_final(1)) ...
-%                                                              + obj.sagittal_offset  + EKF_dpitch ...
-%                                                            )*ds_slow;           
-
                         obj.hd(sw_LA) = obj.hd(sw_LA)   + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*s_slow  + qpitch*s_slow;
                         obj.dhd(sw_LA) = obj.dhd(sw_LA) + (obj.Kfs_p*(obj.dqx_b_fil-obj.tg_velocity_x_fil) + obj.sagittal_offset + obj.Kfs_d*(obj.dqx_b_fil - obj.v_final(1)))*ds_slow + qpitch*ds_slow + dqpitch*s_slow;
                         
-                        % Modify the desired stance leg angle (stance hip joint and stance knee joint) to stablize the pitch motion of the torso                      
-                        obj.hd(st_LA)  = obj.hd(st_LA)  + ( - EKF_pitch)*s_slow  ;
-                        obj.dhd(st_LA) = obj.dhd(st_LA) + ( - EKF_dpitch)*ds_slow ;                            
-                              
                         % foot placement in frontal plane + add roll angle in outputs 
-                        %obj.dqy_b_avg_1  = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
-                        % lateral_ftpl_p =  (obj.Kfl_p*(BI_Vel(2) - gaitparams.Vsp_y)*abduction_direction)*min(1.5*s,1);
-                        % lateral_ftpl_d =  (obj.Kfl_d*(BI_Vel(2) - gaitparams.Vsp_y)*abduction_direction)*min(1.5*s,1);      
                         obj.dqy_b_avg_1 = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
                         lateral_ftpl = (obj.Kfl_p*obj.dqy_b_avg_1 + obj.Kfl_d*(obj.dqy_b_avg_1 - obj.v_final_avgy) + abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);
-                        
-                        
-                        %lateral_ftpl_p =  (obj.Kfl_p*(BI_Vel(2) - gaitparams.Vsp_y)  )*min(1.5*s,1);
-                        %lateral_ftpl_d =  (obj.Kfl_d*(BI_Vel(2) - gaitparams.Vsp_y)*abduction_direction)*min(1.5*s,1);     
-
                         if sign(lateral_ftpl) == abduction_direction
                             p = 1;
                         else
                             p = obj.abduction_inward_gain;
                         end              
-
-                        obj.hd(sw_abduction) = obj.hd(sw_abduction) +   (p * lateral_ftpl  + obj.lateral_offset + obj.lateral_move - EKF_roll)*s_slow  ;
-                        obj.dhd(sw_abduction) = obj.dhd(sw_abduction) + (p * lateral_ftpl  + obj.lateral_offset + obj.lateral_move - EKF_droll)*ds_slow;
-                        
-                        %obj.hd(sw_abduction)  = obj.hd(sw_abduction)  +  (p * lateral_ftpl_p   + obj.lateral_offset - EKF_roll )*s_slow;
-                        %obj.dhd(sw_abduction) = obj.dhd(sw_abduction) +  (p * lateral_ftpl_d   + obj.lateral_offset - EKF_droll)*ds_slow;
-
-                        obj.hd(st_abduction)  = obj.hd(st_abduction)  + (EKF_roll)*s_slow   ;
-                        obj.dhd(st_abduction) = obj.dhd(st_abduction) + (EKF_droll)*ds_slow;          
-                        
-                        
-                        
-%                         obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.5*qroll;
-%                         obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.5*qroll + 4.5*dqroll;                            
-%                         obj.hd(st_abduction)  =  obj.hd(st_abduction)   +  0.05*qroll*s_slow ;
-%                         obj.dhd(st_abduction) =  obj.dhd(st_abduction)  +  0.05*qroll*s_slow  + 0.5*dqroll*s_slow;                         
+                        obj.hd(sw_abduction) = obj.hd(sw_abduction) +   p * lateral_ftpl * s_slow  + (obj.lateral_offset + obj.lateral_move)*s_slow  - qroll*s_slow ;
+                        obj.dhd(sw_abduction) = obj.dhd(sw_abduction) + p * lateral_ftpl * ds_slow + (obj.lateral_offset + obj.lateral_move)*ds_slow - qroll*ds_slow - dqroll*s_slow;
                         
                         % use hip yaw motor on swing leg to maintain the direction ( or not). 
                         if obj.to_turn ~=1 && obj.keep_direction
-                            direction_keep_term  = median([-0.2,0.2,YToolkits.wrap2Pi(obj.tg_yaw - EKF_yaw)]);
+                            direction_keep_term  = median([-0.2,0.2,YToolkits.wrap2Pi(obj.tg_yaw - qyaw)]);
                             obj.hd(sw_rotation)  = obj.hd(sw_rotation) + (direction_keep_term+ obj.turning_offset)*s_slow;
                             obj.dhd(sw_rotation) = obj.dhd(sw_rotation) + (direction_keep_term + obj.turning_offset)*ds_slow;                            
                         else
                             obj.hd(sw_rotation)  = obj.hd(sw_rotation) + (obj.rotation_move + obj.turning_offset)*s_slow;
                             obj.dhd(sw_rotation) = obj.dhd(sw_rotation) + (obj.rotation_move + obj.turning_offset)*ds_slow;
                         end
-                        
 
                     end
                     % prevent sw abduction from hitting AR's safety bound
-                    % obj.hd(sw_abduction) = median([obj.ActuatorLimits(sw_abduction,1) + 0.1,obj.hd(sw_abduction),obj.ActuatorLimits(sw_abduction,2) - 0.1]);
-                               
-                    %% Preparation for standing
-                    if obj.stanceLeg == -1 && obj.to_stand_step_count >= 1.99 % left stance leg (second step) shift the COM to the right
+                    obj.hd(sw_abduction) = median([obj.ActuatorLimits(sw_abduction,1) + 0.1,obj.hd(sw_abduction),obj.ActuatorLimits(sw_abduction,2) - 0.1]);
+                        
+                    % flat the toe ( tilt a little bit)
+                    obj.hd(sw_toe)  = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50); % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
+                    obj.hd(sw_toe)  = obj.hd(sw_toe) + obj.toe_tilt_angle*s_fast;
+                    obj.dhd(sw_toe) = 0;
+                    obj.hd(st_toe)  = obj.h0(st_toe);
+                    obj.dhd(st_toe) = obj.dh0(st_toe);
+                    
+
+                    % Preparation for standing
+                    if obj.stanceLeg == -1 && obj.to_stand_step_count >=1.99
                         obj.hd(sw_abduction) = obj.hd(sw_abduction) - abduction_direction * obj.final_sw_abduction * s_slow;
                         obj.dhd(sw_abduction) = obj.dhd(sw_abduction) - abduction_direction * obj.final_sw_abduction * ds_slow;
                         obj.hd(st_abduction) = obj.hd(st_abduction) + abduction_direction * obj.final_st_abduction * s_slow;
-                        obj.dhd(st_abduction) = obj.dhd(st_abduction) + abduction_direction * obj.final_st_abduction * ds_slow;                     
+                        obj.dhd(st_abduction) = obj.dhd(st_abduction) + abduction_direction * obj.final_st_abduction * ds_slow;
                     end
-                    
-                    if obj.stanceLeg == 1 && obj.to_stand_step_count >= 0.99 % right stance leg (first step) shift the COM to the left 
-                        obj.hd(sw_abduction)  = obj.hd(sw_abduction)  - abduction_direction * obj.pre_final_sw_abduction * s_slow;
+                    if obj.stanceLeg == 1 && obj.to_stand_step_count >=0.99
+                        obj.hd(sw_abduction) = obj.hd(sw_abduction) - abduction_direction * obj.pre_final_sw_abduction * s_slow;
                         obj.dhd(sw_abduction) = obj.dhd(sw_abduction) - abduction_direction * obj.pre_final_sw_abduction * ds_slow;
                     end
                     
-                    %% compute torque 
-                    obj.y  = obj.h0  - obj.hd;
-                    obj.dy = obj.dh0 - obj.dhd;
+                    % compute torque 
+                    obj.y  = obj.h0 - obj.hd;
+                    obj.dy = obj.dh0 -obj.dhd;
                     
                     [ obj.hd_joint, obj.dhd_joint] = get_IK(obj,obj.hd,obj.dhd);
                     [ obj.h0_joint, obj.dh0_joint] = get_IK(obj,obj.h0,obj.dh0);
                     
-                    %% Make the stance leg passive
-                    %if obj.stance_passive == 1
-                    %    obj.hd_joint(st_LA) = obj.h0_joint(st_LA);
-                    %    obj.dhd_joint(st_LA) = 0;
-                    %end
-                    
-                    %% Make the toe joint passive during the stance phase
-                    % flat the toe ( tilt a little bit)
-                    % obj.hd(sw_toe) = obj.h0_joint(sw_thigh) + deg2rad(13) + deg2rad(50) ; % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
-                    % obj.hd(sw_toe) = obj.hd(sw_toe) + obj.toe_tilt_angle*s_fast; % Zhenyu: compensate for jumps observed in the experiments
-                    
-                    % Make toe passive during stance
-                    %obj.dhd(sw_toe) = 0;
-                    %obj.hd(st_toe) = obj.h0(st_toe);
-                    %obj.dhd(st_toe) = obj.dh0(st_toe);                    
-
-                    %% Save it for resetting bezier ( for the passive stance Leg)
+                    % make the stance leg passive
+                    if obj.stance_passive == 1
+                        obj.hd_joint(st_LA) = obj.h0_joint(st_LA);
+                        obj.dhd_joint(st_LA) = 0;
+                    end
+                    % Save it for resetting bezier ( for the passive stance Leg)
                     [ obj.hd, obj.dhd] = get_FK(obj, obj.hd_joint,obj.dhd_joint);
                     
-                    obj.y_joint= obj.h0_joint - obj.hd_joint;
+                    obj.y_joint  = obj.h0_joint - obj.hd_joint;
                     obj.dy_joint = obj.dh0_joint - obj.dhd_joint;
-                    u = - obj.Kp.*obj.y_joint - obj.Kd.*obj.dy_joint; % not final torque, some compensation for gravity will be added, the torque on stance hip roll and stance hip pitch will be replaced.
+                    u = - obj.Kp.*obj.y_joint - obj.Kd.*obj.dy_joint; %not final torque, some compensation for gravity will be added, the torque on stance hip roll and stance hip pitch will be replaced.
                     
-                          
-
-
-                    %% Compensation initial handling
-%                      s_int = s;
-%                      if obj.s_previous_step(end) <= s % bound the s in the current compensation step
-%                        s_int  = obj.s_previous_step(end);
-%                      end  
-%                      num_diff = linspace(0,1e-9,size(obj.s_previous_step,2)); % make this increasing       
-                     
-
-%                      % Interpolate Multiple Sets of Data in One Pass (data must be stored as coloum vectors)
-%                      u_CP = interp1(obj.s_previous_step + num_diff, obj.Torque_PreviousStep', s_int);
-%                      u_CP = reshape(u_CP,10,1); % reshape it to 10x1
-%                      if obj.s_previous_step(end) >= s + 0.02
-%                        e_CP = interp1(obj.s_previous_step + num_diff, obj.Error_PreviousStep', s_int + 0.02);
-%                      else
-%                        e_CP = obj.Error_PreviousStep(:,end);
-%                      end
-%                      e_CP = reshape(e_CP,10,1); % reshape it to 10x1
-%                      
-                     
+                    % Torso Control
+                    u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
+                    u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
+                    if obj.pitch_torso_control == 1
+                        u(3) = (1 - s_L)*u(3) + s_L*u_torso_pitch;
+                        u(8) = (1 - s_R)*u(8) + s_R*u_torso_pitch;
+                    end
+                    if obj.roll_torso_control == 1
+                        u(1) = (1 - s_L)*u(1) + s_L*u_torso_roll;
+                        u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
+                    end
                     
-                    %% abduction compensation
-                    % when SG button is at -1, use constant compensation
-                    % when SG button is at  0, use ILC for stance abduction compensation only
-                    % when SG button is at +1, use ILC for both stance and
-                    % swing abduction compensation
-                    
+                    % abduction compensation
                     if obj.abduction_com == 1
-                        %u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_cp*s_fast;
-                        %u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_cp*(1-s_fast);
-                        
-%                          if RadioButton.SGA == -1  %t < 8
-                             
-                             % Stance abduction constant compensation
-                             s_CP_stance_abduc = YToolkits.bezier(obj.CP_StanceAbdu,s);
-                             u(st_abduction) = u(st_abduction) + abduction_direction * s_CP_stance_abduc;% + u_torso_roll;
-
-%                          else  
-%                              
-%                              % Stance abduction compensation
-%                              u_CP_stance_abduction = clamp(u_CP(1), -180, 180); % Nm
-%                              e_CP_stance_abduction = clamp(e_CP(1), -5, 5); % rad
-%                              u(st_abduction) = u(st_abduction) + abduction_direction * u_CP_stance_abduction*s_fast +  abduction_direction * obj.Gamma_st_abu*e_CP_stance_abduction*s_fast; %  + u_torso_roll
-% 
-%                          end
-                         
-
-%                         if RadioButton.SGA == +1
-%                              % Swing abduction compensation              
-%                              
-%                              u_CP_swing_abduction = clamp(u_CP(6), -100, 100); % Nm
-%                              e_CP_swing_abduction = clamp(e_CP(6), -5, 5); % rad
-%                              u(sw_abduction) = u(sw_abduction) - abduction_direction * u_CP_swing_abduction*(1-s_fast) - abduction_direction * obj.Gamma_sw_abu*e_CP_swing_abduction*(1-s_fast); %  + u_torso_roll
-                        
-%                         else    
-                             % Swing abduction constant compensation              
-                             s_CP_swing_abduc  = YToolkits.bezier(obj.CP_SwingAbdu ,s);
-                             u(sw_abduction) = u(sw_abduction) - abduction_direction * s_CP_swing_abduc;
-%                         end     
-                         
-                        
-                        %if obj.abduction_swing_com == 1
-                        %    u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_swing_cp*(1-s_fast);
-                        %    u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_swing_cp*s_fast;
-                        %end
-                        %u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.uHip_gravity_2*s_fast;
-                        
-
+                        u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_cp*s_fast;
+                        u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_cp*(1-s_fast);
                     end
-                    
-                    %% thigh (hip pitch) compensation
-                    % when SD button is at -1, use constant compensation
-                    % when SD button is at  0, use ILC for stance hip compensation only
-                    % when SD button is at +1, use ILC for both stance and
-                    % swing hip compensation
-
-                    if obj.thigh_compensation == 1
-                        
-                        % Stance knee compensation
-%                         if RadioButton.SDA  == -1  %t < 5  % || obj.com_vel_y_fil > 0.2 % currently the com keep drifting to the left
-                             % stance thigh compensation using a predefined
-                             % fuction:
-                             % Constant stance thigh compensation
-                             s_CP_stance_hip  = YToolkits.bezier(obj.CP_StanceHip ,s);
-                             u(st_thigh) = u(st_thigh) + s_CP_stance_hip;% + u_torso_roll;
-                             % u(st_thigh) = u(st_thigh) + obj.u_thigh_cp*s_fast;
-                             
-%                         else  
-%                              % ILC stance thigh compensation:
-%                              u_CP_stance_hip_pitch = clamp(u_CP(3), -150, 150); % Nm
-%                              e_CP_stance_hip_pitch = clamp(e_CP(3), -1, 1); % rad
-%                              u(st_thigh) = u(st_thigh) + u_CP_stance_hip_pitch*s_superfast  + obj.Gamma_st_hip*e_CP_stance_hip_pitch;%  + u_torso_pitch;
-% 
-%                         end  
-                        
-                        % swing thigh compensation
-%                         if RadioButton.SDA  == +1
-%                              % ILC swing thigh compensation
-%                              u_CP_swing_hip_pitch = clamp(u_CP(8), -80, 80); % Nm
-%                              e_CP_swing_hip_pitch = clamp(e_CP(8), -1, 1); % rad
-%                              u(sw_thigh) = u(sw_thigh) + u_CP_swing_hip_pitch*s_superfast  + obj.Gamma_sw_hip*e_CP_swing_hip_pitch;%  + u_torso_pitch; 
-% 
-%                         else
-                             % Constant swing thigh compensation
-                             s_CP_swing_hip  = YToolkits.bezier(obj.CP_SwingHip ,s);
-                             u(sw_thigh) = u(sw_thigh) + s_CP_swing_hip;
-                            
-%                         end                        
+                    if obj.abduction_swing_com == 1
+                        u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_swing_cp*(1-s_fast);
+                        u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_swing_cp*s_fast;
                     end
-                     
-                                     
-                    %% knee compensation
-                    % when SC button is at  0, use constant compensation
-                    % when SC button is at -1, use ILC for stance knee compensation only
-                    % when SC button is at +1, use ILC for both stance and
-                    % swing knee compensation
-
+                    u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.uHip_gravity_2*s_fast;
+                    % knee compensation
                     if obj.knee_com == 1
-                               
-%                          if  RadioButton.SCA == -1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             == 1
-                             % Constant stance knee compensation
-                             % u(st_knee) = u(st_knee) + (obj.u_knee_cp)*s_fast*cos(obj.h0(st_thigh));
-                             % Use a Bezier polynomial for knee precompensation: 
-                             s_CP_stance_knee = YToolkits.bezier(obj.CP_StanceKnee,s);
-                             u(st_knee) = u(st_knee) + s_CP_stance_knee*s_superfast;      
-                        
-%                          else  
-%                              % ILC stance knee compensation
-%                              % these are the st_knee in the previous step
-%                              u_CP_stance_knee = clamp(u_CP(4), -20, 180); % Nm
-%                              e_CP_stance_knee = clamp(e_CP(4), -2, 2); % rad
-% 
-%                              u(st_knee) = u(st_knee) + u_CP_stance_knee + obj.Gamma_st_knee*e_CP_stance_knee;
-%                              
-%                          end
-                         
-                         % Swing knee compensation
-%                          if  RadioButton.SCA == +1 % turn on the swing knee compensation
-%                              
-%                              % ILC swing knee compensation
-%                              u_CP_swing_knee = clamp(u_CP(9), -50, 50); % Nm
-%                              e_CP_swing_knee = clamp(e_CP(9), -2, 2); % rad
-%                              u(sw_knee) = u(sw_knee) + u_CP_swing_knee + obj.Gamma_sw_knee*e_CP_swing_knee; 
-%                         
-%                          else
-                   
-                             % Constant swing knee compensation
-                             s_CP_swing_knee = YToolkits.bezier(obj.CP_SwingKnee,s); 
-                             u(sw_knee) = u(sw_knee) + s_CP_swing_knee;
-%                          end     
-                             
-
+                        u(st_knee) = u(st_knee) + (obj.u_knee_cp)*s_fast*cos(obj.h0(st_thigh));
+                        u(sw_knee) = u(sw_knee) + (obj.u_knee_cp)*(1-s_fast);
+                    end
+                    % thigh_compensation
+                    if obj.thigh_compensation == 1
+                        u(st_thigh) = u(st_thigh) + obj.u_thigh_cp*s_fast;
+                        u(sw_thigh) = u(sw_thigh) + obj.u_thigh_cp*(1-s_fast);
                     end
                     
-                    
-                    %% Torso Torque Control
-                    
-                    if 0                   
-                        % bring them back to test the knee joint tracking only.
-                        u_torso_pitch = - obj.Kp_pitch * qpitch - obj.Kd_pitch * dqpitch;
-                        u_torso_roll  =   obj.Kp_roll  * qroll  + obj.Kd_roll  * dqroll;
-
-                        if t > 10
-                            if obj.pitch_torso_control == 1
-                                u(3) = (1 - s_L)*u(3) + s_L*u_torso_pitch;
-                                u(8) = (1 - s_R)*u(8) + s_R*u_torso_pitch;
-
-                            end
-
-                            if obj.roll_torso_control == 1
-                                u(1) = (1 - s_L)*u(1) + s_L*u_torso_roll;
-                                u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
-                            end
-                        end 
-                    
-                    end                    
-                    
-                    %% Toe compensation
-                    toe_com = 1;
-                   
-                    if toe_com == 1
-                       u(st_toe) = u(st_toe) + 5*s_slow  + obj.Kfs_p*(obj.avg_stepSpeed(1) - obj.tg_velocity_x_fil) ...
-                                                         + obj.Kfs_d*(BI_Vel(1) - obj.v_final(1)  );
-                       u(sw_toe) = u(sw_toe) + 0;
-                    end 
-                                                   
-                    %% Construct Data
+                    % Construct Data
                     Data.hd = obj.hd; 
                     Data.dhd = obj.dhd;
                     Data.hd_joint = obj.hd_joint;
                     Data.dhd_joint = obj.dhd_joint;
                     Data.y_joint = obj.y_joint ;
                     Data.dy_joint   = obj.dy_joint ;
-          
-                    
-                    % in the data structure, stance joints are 1:5 and swing joints are 6:10    
-%                     if obj.stanceLeg == 1 % right stanceleg
-%                         % Not only legs are switched, but the direction
-%                         % of the abuduction motors and yaw motors are
-%                         % changed.
-%                         obj.Error_CurrentStep([1,2,  6,7], obj.kstep)  =   obj.y_joint([6, 7, 1, 2]);
-%                         obj.Error_CurrentStep([3:5, 8:10], obj.kstep)  =   obj.y_joint([8:10, 3:5]);
-%                         
-%                         obj.Torque_CurrentStep([1,2,  6,7], obj.kstep)  =  -u([6, 7, 1, 2]);
-%                         obj.Torque_CurrentStep([3:5, 8:10], obj.kstep)  =   u([8:10, 3:5]);
-%                         
-%                         
-%                     else % left leg in stance
-%                         obj.Error_CurrentStep(:, obj.kstep)   =   obj.y_joint;
-%                         obj.Torque_CurrentStep(:, obj.kstep)  =   u;
-%                     end                         
-%                     
-%                     
-%                     obj.s_current_step(obj.kstep) = s;
-%                     obj.kstep = obj.kstep + 1;
-                end
-                
-                
 
+                end
                 %% stand up
                 if obj.task == 2              
                     % If next task is to walk, shift the center of mass to
@@ -1368,8 +1154,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
 
                 GaitLibraryInputs(1) = obj.stanceLeg;
-                GaitLibraryInputs(2) = BI_Vel(1);
-                GaitLibraryInputs(3) = BI_Vel(2);
+                if RadioButton.SGA == +1 % use EKF data
+                    GaitLibraryInputs(2) = BI_Vel(1);
+                    GaitLibraryInputs(3) = BI_Vel(2);
+                else 
+                    GaitLibraryInputs(2) = obj.dqx_b_fil;
+                    GaitLibraryInputs(2) = obj.dqy_b_fil;    
+                end
                 GaitLibraryInputs(4) = obj.tg_velocity_x_fil;
                 GaitLibraryInputs(5) = obj.lateral_move_fil;
                 GaitLibraryInputs(6) = s;
@@ -1464,16 +1255,31 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             dqy = v_torso(2);
             dqz = v_torso(3);
         end     
+%         function [ GRF_L, GRF_R  ] = get_GRF(obj,qall,qsR,qsL,u)
+%             qall(4) = 0;
+%             JR = J_RightToeJoint(qall);
+%             JL = J_LeftToeJoint(qall);
+%             [Fs1R, Fs2R, Fs1L, Fs2L] = get_spring_force(obj,qsR,qsL);
+%             JR_s = JR([1,3],[18,19]);
+%             JL_s = JL([1,3],[11,12]);
+%             GRF_R = (-JR_s')^-1*[Fs1R+Fs2R; Fs2R];
+%             GRF_L = (-JL_s')^-1*[Fs1L+Fs2L; Fs2L];
+%         end  
         function [ GRF_L, GRF_R  ] = get_GRF(obj,qall,qsR,qsL,u)
             qall(4) = 0;
             JR = J_RightToeJoint(qall);
             JL = J_LeftToeJoint(qall);
             [Fs1R, Fs2R, Fs1L, Fs2L] = get_spring_force(obj,qsR,qsL);
-            JR_s = JR([1,3],[18,19]);
+            JL_H = J_HeelSpringDeflectionEst(qall(10),qall(11),qall(12));
+            JR_H = J_HeelSpringDeflectionEst(qall(17),qall(18),qall(19));
             JL_s = JL([1,3],[11,12]);
-            GRF_R = (-JR_s')^-1*[Fs1R+Fs2R; Fs2R];
-            GRF_L = (-JL_s')^-1*[Fs1L+Fs2L; Fs2L];
-        end  
+            JR_s = JR([1,3],[18,19]);
+            GRF_L = (-JL_s')^-1*[Fs1L+JL_H(2)*Fs2L; JL_H(3)*Fs2L];
+            GRF_R = (-JR_s')^-1*[Fs1R+JR_H(2)*Fs2R; JR_H(3)*Fs2R];
+        end        
+        
+  
+        
         function [Fs1R, Fs2R, Fs1L, Fs2L] = get_spring_force(obj,qsR,qsL)
             Fs1R =- obj.Ks1 * qsR(1);
             Fs2R =- obj.Ks2 * qsR(2);
