@@ -1,28 +1,68 @@
 
   <Object type="Desktop.Xpc.Designer.InstrumentPanel, Desktop.Xpc.Designer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="InstrumentPanel1" children="Controls">
-    <Object type="MW.Instruments.NumericDisplay, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericDisplay2" children="Controls">
-      <Property name="BindingSrcType">None</Property>
-      <Property name="OutputValue">0</Property>
-      <Property name="BindingSrcPath">
-      </Property>
-      <Property name="BindingSrcObject" />
-      <Property name="TargetName">
-      </Property>
-      <Property name="Size">100, 25</Property>
-      <Property name="Location">1110, 866</Property>
-      <Property name="Name">NumericDisplay2</Property>
+    <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label91" children="Controls">
+      <Property name="FlatStyle">System</Property>
+      <Property name="Text">forward speed (SEA ==+1)</Property>
+      <Property name="UseCompatibleTextRendering">True</Property>
+      <Property name="Location">1023, 803</Property>
+      <Property name="Name">Label91</Property>
+      <Property name="Size">263, 23</Property>
     </Object>
-    <Object type="MW.Instruments.NumericDisplay, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericDisplay1" children="Controls">
-      <Property name="BindingSrcType">None</Property>
-      <Property name="OutputValue">0</Property>
-      <Property name="BindingSrcPath">
-      </Property>
-      <Property name="BindingSrcObject" />
-      <Property name="TargetName">
-      </Property>
-      <Property name="Size">100, 25</Property>
-      <Property name="Location">1110, 835</Property>
-      <Property name="Name">NumericDisplay1</Property>
+    <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry97" children="Controls">
+      <Property name="BindingSrcPath">/c_sagittal_speed</Property>
+      <Property name="TargetName">CassieV3</Property>
+      <Property name="BindingSrcType">Parameter</Property>
+      <Property name="Size">100, 23</Property>
+      <Property name="Location">1023, 829</Property>
+      <Property name="Name">NumericEntry97</Property>
+    </Object>
+    <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label90" children="Controls">
+      <Property name="FlatStyle">System</Property>
+      <Property name="Text">swing toe angle gain</Property>
+      <Property name="UseCompatibleTextRendering">True</Property>
+      <Property name="Location">856, 800</Property>
+      <Property name="Name">Label90</Property>
+      <Property name="Size">113, 23</Property>
+    </Object>
+    <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry96" children="Controls">
+      <Property name="BindingSrcPath">/c_sw_toe_gain</Property>
+      <Property name="TargetName">CassieV3</Property>
+      <Property name="BindingSrcType">Parameter</Property>
+      <Property name="Size">100, 23</Property>
+      <Property name="Location">856, 826</Property>
+      <Property name="Name">NumericEntry96</Property>
+    </Object>
+    <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label89" children="Controls">
+      <Property name="FlatStyle">System</Property>
+      <Property name="Text">stance toe forward</Property>
+      <Property name="UseCompatibleTextRendering">True</Property>
+      <Property name="Location">578, 825</Property>
+      <Property name="Name">Label89</Property>
+      <Property name="Size">113, 23</Property>
+    </Object>
+    <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label88" children="Controls">
+      <Property name="FlatStyle">System</Property>
+      <Property name="Text">stance toe ip backward</Property>
+      <Property name="UseCompatibleTextRendering">True</Property>
+      <Property name="Location">578, 796</Property>
+      <Property name="Name">Label88</Property>
+      <Property name="Size">125, 23</Property>
+    </Object>
+    <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry95" children="Controls">
+      <Property name="BindingSrcPath">/c_K_toe_ff</Property>
+      <Property name="TargetName">CassieV3</Property>
+      <Property name="BindingSrcType">Parameter</Property>
+      <Property name="Size">100, 23</Property>
+      <Property name="Location">727, 825</Property>
+      <Property name="Name">NumericEntry95</Property>
+    </Object>
+    <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label84" children="Controls">
+      <Property name="FlatStyle">System</Property>
+      <Property name="Text">stance toe ip forward</Property>
+      <Property name="UseCompatibleTextRendering">True</Property>
+      <Property name="Location">578, 767</Property>
+      <Property name="Name">Label84</Property>
+      <Property name="Size">113, 23</Property>
     </Object>
     <Object type="System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="GroupBox7" children="Controls">
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label83" children="Controls">
@@ -133,22 +173,14 @@
       <Property name="Name">GroupBox7</Property>
       <Property name="Size">411, 213</Property>
     </Object>
-    <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label74" children="Controls">
-      <Property name="Text">COM BP (m)</Property>
-      <Property name="UseCompatibleTextRendering">True</Property>
-      <Property name="Location">599, 767</Property>
-      <Property name="Name">Label74</Property>
-      <Property name="Size">140, 23</Property>
-    </Object>
-    <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry79" children="Controls">
-      <Property name="BindingSrcPath">/c_com_bp</Property>
-      <Property name="TargetName">CassieV3</Property>
-      <Property name="BindingSrcType">Parameter</Property>
-      <Property name="Size">96, 23</Property>
-      <Property name="Location">707, 767</Property>
-      <Property name="Name">NumericEntry79</Property>
-    </Object>
     <Object type="System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="GroupBox6" children="Controls">
+      <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label86" children="Controls">
+        <Property name="Text">lateral velocity gain</Property>
+        <Property name="UseCompatibleTextRendering">True</Property>
+        <Property name="Location">266, 117</Property>
+        <Property name="Name">Label86</Property>
+        <Property name="Size">126, 23</Property>
+      </Object>
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label53" children="Controls">
         <Property name="FlatStyle">Flat</Property>
         <Property name="Text">fil_para_5</Property>
@@ -156,6 +188,13 @@
         <Property name="Location">33, 154</Property>
         <Property name="Name">Label53</Property>
         <Property name="Size">100, 23</Property>
+      </Object>
+      <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label85" children="Controls">
+        <Property name="Text">toe tilt angle</Property>
+        <Property name="UseCompatibleTextRendering">True</Property>
+        <Property name="Location">290, 146</Property>
+        <Property name="Name">Label85</Property>
+        <Property name="Size">80, 23</Property>
       </Object>
       <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry68" children="Controls">
         <Property name="BindingSrcPath">/c_fil_para_5</Property>
@@ -165,6 +204,14 @@
         <Property name="Location">142, 154</Property>
         <Property name="Name">NumericEntry68</Property>
       </Object>
+      <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry93" children="Controls">
+        <Property name="BindingSrcPath">/c_toe_tilt_angle</Property>
+        <Property name="TargetName">CassieV3</Property>
+        <Property name="BindingSrcType">Parameter</Property>
+        <Property name="Size">96, 23</Property>
+        <Property name="Location">398, 146</Property>
+        <Property name="Name">NumericEntry93</Property>
+      </Object>
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label51" children="Controls">
         <Property name="FlatStyle">Flat</Property>
         <Property name="Text">fil_para_4</Property>
@@ -172,6 +219,14 @@
         <Property name="Location">33, 125</Property>
         <Property name="Name">Label51</Property>
         <Property name="Size">100, 23</Property>
+      </Object>
+      <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry92" children="Controls">
+        <Property name="BindingSrcPath">/c_init_lateral_velocity</Property>
+        <Property name="TargetName">CassieV3</Property>
+        <Property name="BindingSrcType">Parameter</Property>
+        <Property name="Size">96, 23</Property>
+        <Property name="Location">398, 117</Property>
+        <Property name="Name">NumericEntry92</Property>
       </Object>
       <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry65" children="Controls">
         <Property name="BindingSrcPath">/c_fil_para_4</Property>
@@ -188,6 +243,21 @@
         <Property name="Location">33, 96</Property>
         <Property name="Name">Label48</Property>
         <Property name="Size">100, 23</Property>
+      </Object>
+      <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label74" children="Controls">
+        <Property name="Text">COM BP (m)</Property>
+        <Property name="UseCompatibleTextRendering">True</Property>
+        <Property name="Location">290, 88</Property>
+        <Property name="Name">Label74</Property>
+        <Property name="Size">80, 23</Property>
+      </Object>
+      <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry79" children="Controls">
+        <Property name="BindingSrcPath">/c_com_bp</Property>
+        <Property name="TargetName">CassieV3</Property>
+        <Property name="BindingSrcType">Parameter</Property>
+        <Property name="Size">96, 23</Property>
+        <Property name="Location">398, 88</Property>
+        <Property name="Name">NumericEntry79</Property>
       </Object>
       <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry59" children="Controls">
         <Property name="BindingSrcPath">/c_fil_para_3</Property>
@@ -240,7 +310,23 @@
       <Property name="UseCompatibleTextRendering">True</Property>
       <Property name="Location">2, 596</Property>
       <Property name="Name">GroupBox6</Property>
-      <Property name="Size">545, 264</Property>
+      <Property name="Size">524, 264</Property>
+    </Object>
+    <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry91" children="Controls">
+      <Property name="BindingSrcPath">/c_K_toe_ip_b</Property>
+      <Property name="TargetName">CassieV3</Property>
+      <Property name="BindingSrcType">Parameter</Property>
+      <Property name="Size">100, 23</Property>
+      <Property name="Location">727, 796</Property>
+      <Property name="Name">NumericEntry91</Property>
+    </Object>
+    <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry90" children="Controls">
+      <Property name="BindingSrcPath">/c_K_toe_ip_f</Property>
+      <Property name="TargetName">CassieV3</Property>
+      <Property name="BindingSrcType">Parameter</Property>
+      <Property name="Size">100, 23</Property>
+      <Property name="Location">727, 767</Property>
+      <Property name="Name">NumericEntry90</Property>
     </Object>
     <Object type="System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="GroupBox1" children="Controls">
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label73" children="Controls">
@@ -429,7 +515,7 @@
       </Object>
       <Property name="Text">Offset</Property>
       <Property name="UseCompatibleTextRendering">True</Property>
-      <Property name="Location">1146, 18</Property>
+      <Property name="Location">1023, 33</Property>
       <Property name="Name">GroupBox5</Property>
       <Property name="Size">301, 156</Property>
     </Object>
@@ -450,11 +536,11 @@
       </Object>
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label16" children="Controls">
         <Property name="FlatStyle">System</Property>
-        <Property name="Text">toe</Property>
+        <Property name="Text">swing toe</Property>
         <Property name="UseCompatibleTextRendering">True</Property>
         <Property name="Location">40, 174</Property>
         <Property name="Name">Label16</Property>
-        <Property name="Size">100, 23</Property>
+        <Property name="Size">52, 23</Property>
       </Object>
       <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry23" children="Controls">
         <Property name="BindingSrcPath">/c_Kd_toe</Property>
@@ -622,7 +708,7 @@
     <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label55" children="Controls">
       <Property name="Text">force_step_end_s</Property>
       <Property name="UseCompatibleTextRendering">True</Property>
-      <Property name="Location">1146, 200</Property>
+      <Property name="Location">1023, 215</Property>
       <Property name="Name">Label55</Property>
       <Property name="Size">88, 23</Property>
     </Object>
@@ -631,7 +717,7 @@
       <Property name="TargetName">CassieV3</Property>
       <Property name="BindingSrcType">Parameter</Property>
       <Property name="Size">100, 23</Property>
-      <Property name="Location">1263, 200</Property>
+      <Property name="Location">1140, 215</Property>
       <Property name="Name">NumericEntry71</Property>
     </Object>
     <Object type="System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="GroupBox4" children="Controls">
@@ -800,10 +886,25 @@
       <Property name="Size">528, 310</Property>
     </Object>
     <Object type="System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="compensation" children="Controls">
+      <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label87" children="Controls">
+        <Property name="Text">yaw_compensation(N)</Property>
+        <Property name="UseCompatibleTextRendering">True</Property>
+        <Property name="Location">27, 120</Property>
+        <Property name="Name">Label87</Property>
+        <Property name="Size">140, 23</Property>
+      </Object>
+      <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry94" children="Controls">
+        <Property name="BindingSrcPath">/c_u_yaw_cp</Property>
+        <Property name="TargetName">CassieV3</Property>
+        <Property name="BindingSrcType">Parameter</Property>
+        <Property name="Size">96, 23</Property>
+        <Property name="Location">213, 120</Property>
+        <Property name="Name">NumericEntry94</Property>
+      </Object>
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label46" children="Controls">
         <Property name="Text">knee_compensation(N)</Property>
         <Property name="UseCompatibleTextRendering">True</Property>
-        <Property name="Location">16, 76</Property>
+        <Property name="Location">27, 91</Property>
         <Property name="Name">Label46</Property>
         <Property name="Size">140, 23</Property>
       </Object>
@@ -812,20 +913,20 @@
         <Property name="TargetName">CassieV3</Property>
         <Property name="BindingSrcType">Parameter</Property>
         <Property name="Size">96, 23</Property>
-        <Property name="Location">202, 76</Property>
+        <Property name="Location">213, 91</Property>
         <Property name="Name">NumericEntry56</Property>
       </Object>
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label45" children="Controls">
         <Property name="Text">thigh_compensation(N)</Property>
         <Property name="UseCompatibleTextRendering">True</Property>
-        <Property name="Location">16, 46</Property>
+        <Property name="Location">27, 61</Property>
         <Property name="Name">Label45</Property>
         <Property name="Size">158, 23</Property>
       </Object>
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label44" children="Controls">
         <Property name="Text">abduction_compensation(N)</Property>
         <Property name="UseCompatibleTextRendering">True</Property>
-        <Property name="Location">16, 13</Property>
+        <Property name="Location">27, 34</Property>
         <Property name="Name">Label44</Property>
         <Property name="Size">180, 23</Property>
       </Object>
@@ -834,7 +935,7 @@
         <Property name="TargetName">CassieV3</Property>
         <Property name="BindingSrcType">Parameter</Property>
         <Property name="Size">96, 23</Property>
-        <Property name="Location">202, 46</Property>
+        <Property name="Location">213, 61</Property>
         <Property name="Name">NumericEntry54</Property>
       </Object>
       <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry55" children="Controls">
@@ -842,14 +943,14 @@
         <Property name="TargetName">CassieV3</Property>
         <Property name="BindingSrcType">Parameter</Property>
         <Property name="Size">96, 23</Property>
-        <Property name="Location">202, 13</Property>
+        <Property name="Location">213, 28</Property>
         <Property name="Name">NumericEntry55</Property>
       </Object>
       <Property name="Text">compensation</Property>
       <Property name="UseCompatibleTextRendering">True</Property>
       <Property name="Location">565, 596</Property>
       <Property name="Name">compensation</Property>
-      <Property name="Size">367, 102</Property>
+      <Property name="Size">367, 160</Property>
     </Object>
     <Object type="System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="walking_standing_switch" children="Controls">
       <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label71" children="Controls">
@@ -978,14 +1079,14 @@
     <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label12" children="Controls">
       <Property name="Text">stance_thre_lb(N)</Property>
       <Property name="UseCompatibleTextRendering">True</Property>
-      <Property name="Location">1146, 274</Property>
+      <Property name="Location">1023, 289</Property>
       <Property name="Name">Label12</Property>
       <Property name="Size">100, 23</Property>
     </Object>
     <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label11" children="Controls">
       <Property name="Text">stance_thre_ub(N)</Property>
       <Property name="UseCompatibleTextRendering">True</Property>
-      <Property name="Location">1146, 234</Property>
+      <Property name="Location">1023, 249</Property>
       <Property name="Name">Label11</Property>
       <Property name="Size">111, 23</Property>
     </Object>
@@ -994,7 +1095,7 @@
       <Property name="TargetName">CassieV3</Property>
       <Property name="BindingSrcType">Parameter</Property>
       <Property name="Size">100, 23</Property>
-      <Property name="Location">1263, 274</Property>
+      <Property name="Location">1140, 289</Property>
       <Property name="Name">NumericEntry15</Property>
     </Object>
     <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry16" children="Controls">
@@ -1002,8 +1103,8 @@
       <Property name="TargetName">CassieV3</Property>
       <Property name="BindingSrcType">Parameter</Property>
       <Property name="Size">100, 23</Property>
-      <Property name="Location">1263, 234</Property>
+      <Property name="Location">1140, 249</Property>
       <Property name="Name">NumericEntry16</Property>
     </Object>
-    <Property name="ClientSize">3440, 1440</Property>
+    <Property name="ClientSize">1536, 864</Property>
   </Object>

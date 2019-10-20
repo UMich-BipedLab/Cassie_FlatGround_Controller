@@ -26,7 +26,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         Kfl_p;
         Kfs_d;
         Kfl_d;
-        
+
         Kp_toe_stand;
         Kd_toe_stand;
         Kp_lateral_stand;
@@ -70,8 +70,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 
         u_abduction_cp;
         u_abduction_swing_cp;
+        u_yaw_cp;
         u_thigh_cp;
         u_knee_cp;
+        
         
         fil_para_2;
         fil_para_3;
@@ -92,18 +94,19 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
  
         Gamma_st_abu;
         Gamma_sw_abu;
-        
         Gamma_st_hip;
         Gamma_sw_hip;
-        
         Gamma_st_knee;
         Gamma_sw_knee;
-        
-        
+
         
         com_bp;
-        
         sagittal_speed;
+        
+        K_toe_ip_f;
+        K_toe_ip_b;
+        K_toe_ff;
+        sw_toe_gain;
 
     end
     % PROTECTED PROPERTIES ====================================================
@@ -154,6 +157,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         roll_torso_control = 1;
         stance_passive = 1;
         knee_com = 1;
+        yaw_com = 1;
         abduction_com = 1;
         thigh_compensation = 1;
         abduction_swing_com = 0;
@@ -187,6 +191,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         pitch_des_fil = 0;
         tg_velocity_x_fil = 0;
         lateral_move_fil = 0;
+        rotation_move_fil = 0;
+        stance_toe_velocity_fil = 0; 
         
         LL_des_fil = 0.7;
         roll_des_fil = 0;
@@ -321,6 +327,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             obj.lateral_move = 0.015*RadioButton.LHA;
             obj.lateral_move_fil = YToolkits.first_order_filter(obj.lateral_move_fil, obj.lateral_move, 0.003);
             obj.rotation_move = -0.2*RadioButton.RHA;
+            obj.rotation_move_fil = YToolkits.first_order_filter(obj.rotation_move_fil, obj.rotation_move, 0.003);
             if abs(RadioButton.RHA)<0.1
                 obj.to_turn = -1;
             else
@@ -464,7 +471,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 %                 obj.GRF_vL_history(1) = GRF_L(2);
 %                 obj.GRF_vR_history(2:end) = obj.GRF_vR_history(1:end-1);
 %                 obj.GRF_vR_history(1) = GRF_R(2);
-                [Fs1R, Fs2R, Fs1L, Fs2L] = get_spring_force(obj,qsR,qsL);
+%                 [Fs1R, Fs2R, Fs1L, Fs2L] = get_spring_force(obj,qsR,qsL);
                 [ s_L, s_R ] = obj.get_s_LR(GRF_v); % s is normalized between 0 and 1, 0 means the leg is in air and 1 means leg is on ground.
                 s_LR = [s_L; s_R];
 
@@ -773,7 +780,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 l_foot_p = Rz'*l_foot_p;
                 
                 foot_px = [l_foot_p(1); r_foot_p(1)];
-                foot_py = [l_foot_p(2);r_foot_p(2)];
+                foot_py = [l_foot_p(2); r_foot_p(2)];
                 foot_pz = [l_foot_p(3); r_foot_p(3)];
                 
                 % position and velocity of COM has the assumption that
@@ -808,7 +815,6 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 e_CP_stance_hip_pitch = 0;
                 u_OT_stance_hip_pitch = 0;
                 
-                
                 u_CP_stance_abduction = 0;
                 e_CP_stance_abduction = 0;
                 u_OT_stance_abduction = 0;
@@ -819,7 +825,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 hd_original = zeros(10,1);
                 lateral_ftpl = 0;
 
-                                %% walking
+                %% walking
                 if obj.task == 1 % walking
                     % Compute desired outputs ( here the outputs dose not
                     % include torso orientation. the outputs will be
@@ -834,7 +840,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         
                         % foot placement in frontal plane + add roll angle in outputs 
                         obj.dqy_b_avg_1 = (obj.lateral_velocity_weight*obj.dqy_b_fil+(1-obj.lateral_velocity_weight)*obj.dqy_b_start);
-                        lateral_ftpl = (obj.Kfl_p*obj.dqy_b_avg_1 + obj.Kfl_d*(obj.dqy_b_avg_1 - obj.v_final_avgy) + abduction_direction*obj.init_lateral_velocity*median([0,1,obj.dqx_b_fil]))*min(1.5*s,1);
+                        lateral_ftpl = (obj.Kfl_p*obj.dqy_b_avg_1 + obj.Kfl_d*(obj.dqy_b_avg_1 - obj.v_final_avgy) - abduction_direction*obj.init_lateral_velocity*median([0,1,abs(obj.dqx_b_fil)]))*min(1.5*s,1);
                         if sign(lateral_ftpl) == abduction_direction
                             p = 1;
                         else
@@ -849,8 +855,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                             obj.hd(sw_rotation)  = obj.hd(sw_rotation) + (direction_keep_term+ obj.turning_offset)*s_slow;
                             obj.dhd(sw_rotation) = obj.dhd(sw_rotation) + (direction_keep_term + obj.turning_offset)*ds_slow;                            
                         else
-                            obj.hd(sw_rotation)  = obj.hd(sw_rotation) + (obj.rotation_move + obj.turning_offset)*s_slow;
-                            obj.dhd(sw_rotation) = obj.dhd(sw_rotation) + (obj.rotation_move + obj.turning_offset)*ds_slow;
+                            obj.hd(sw_rotation)  = obj.hd(sw_rotation) + (obj.rotation_move_fil + obj.turning_offset)*s_slow;
+                            obj.dhd(sw_rotation) = obj.dhd(sw_rotation) + (obj.rotation_move_fil + obj.turning_offset)*ds_slow;
                         end
 
                     end
@@ -858,8 +864,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     obj.hd(sw_abduction) = median([obj.ActuatorLimits(sw_abduction,1) + 0.1,obj.hd(sw_abduction),obj.ActuatorLimits(sw_abduction,2) - 0.1]);
                         
                     % flat the toe ( tilt a little bit)
-                    obj.hd(sw_toe)  = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50); % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
-                    obj.hd(sw_toe)  = obj.hd(sw_toe) + obj.toe_tilt_angle*s_fast;
+                    obj.hd(sw_toe)  = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50) - qpitch*s_slow; % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
+                    obj.hd(sw_toe)  =   obj.hd(sw_toe) +  obj.toe_tilt_angle; %s_fast*clamp( obj.sw_toe_gain,  -obj.toe_tilt_angle,  obj.toe_tilt_angle);
                     obj.dhd(sw_toe) = 0;
                     obj.hd(st_toe)  = obj.h0(st_toe);
                     obj.dhd(st_toe) = obj.dh0(st_toe);
@@ -889,6 +895,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         obj.hd_joint(st_LA) = obj.h0_joint(st_LA);
                         obj.dhd_joint(st_LA) = 0;
                     end
+                    
                     % Save it for resetting bezier ( for the passive stance Leg)
                     [ obj.hd, obj.dhd] = get_FK(obj, obj.hd_joint,obj.dhd_joint);
                     
@@ -908,26 +915,93 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         u(6) = (1 - s_R)*u(6) + s_R*u_torso_roll;
                     end
                     
+                     
                     % abduction compensation
                     if obj.abduction_com == 1
                         u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_cp*s_fast;
                         u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_cp*(1-s_fast);
                     end
-                    if obj.abduction_swing_com == 1
-                        u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_swing_cp*(1-s_fast);
-                        u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_swing_cp*s_fast;
-                    end
+%                     if obj.abduction_swing_com == 1
+%                         u(st_abduction) = u(st_abduction) + abduction_direction*obj.u_abduction_swing_cp*(1-s_fast);
+%                         u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.u_abduction_swing_cp*s_fast;
+%                     end
                     u(sw_abduction) = u(sw_abduction) - abduction_direction*obj.uHip_gravity_2*s_fast;
-                    % knee compensation
-                    if obj.knee_com == 1
-                        u(st_knee) = u(st_knee) + (obj.u_knee_cp)*s_fast*cos(obj.h0(st_thigh));
-                        u(sw_knee) = u(sw_knee) + (obj.u_knee_cp)*(1-s_fast);
-                    end
+                    
                     % thigh_compensation
                     if obj.thigh_compensation == 1
                         u(st_thigh) = u(st_thigh) + obj.u_thigh_cp*s_fast;
                         u(sw_thigh) = u(sw_thigh) + obj.u_thigh_cp*(1-s_fast);
                     end
+                    
+                    
+                    % yaw compensation
+                    if obj.yaw_com == 1
+                        u(st_rotation) = u(st_rotation) + abduction_direction*obj.u_yaw_cp*s_fast;
+                        u(sw_rotation) = u(sw_rotation) - abduction_direction*obj.u_yaw_cp*(1-s_fast);
+                    end
+                    
+                    % knee compensation
+                    if obj.knee_com == 1
+                        u(st_knee) = u(st_knee) + (obj.u_knee_cp)*s_fast*cos(obj.h0(st_thigh));
+                        u(sw_knee) = u(sw_knee) + (obj.u_knee_cp)*(1-s_fast);
+                    end
+             
+
+                    
+                    obj.stance_toe_velocity_fil = YToolkits.first_order_filter(obj.stance_toe_velocity_fil,obj.dh0(st_toe),obj.fil_para_3);
+                     
+                    % stance toe control
+%                     if (abs(obj.dqx_b_fil) < 0.1)  &&  (abs(obj.tg_velocity_x_fil)<0.1)
+%                        % stepping in place 
+%                        if obj.dqx_b_fil < 0.05
+%                           u(st_toe) =  clamp( -obj.K_toe_ip_b*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15); 
+%                        else
+%                           u(st_toe) =  clamp( -obj.K_toe_ip_f*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15);
+%                        end           
+%                     else % moving at a different speeds
+%                        u(st_toe) =  clamp( -obj.K_toe_ff*(obj.stance_toe_velocity_fil)*s_fast*(1-s_slow),-15,15);  
+%                     end
+
+%                     P_feedback_toe = ( com_pos(1) - obj.stand_offset- (r_foot_p(1)+l_foot_p(1))/2);
+%                     obj.P_feedback_toe_fil = YToolkits.first_order_filter(obj.P_feedback_toe_fil,P_feedback_toe,obj.fil_para_3);
+%                     u_toe = - (obj.Kp_toe_stand*obj.P_feedback_toe_fil + obj.Kd_toe_stand*( obj.com_vel_x_fil - 0));
+%                     u([5,10]) = min(s_L,s_R)*u_toe;
+%                     u([5,10]) = YToolkits.clamp(u([5,10]),-15,15);
+
+                         
+                    % toe compenstation based on the current GRF                 
+                    if obj.stanceLeg == +1 
+                        GRF_stance = GRF_R;
+                        foot_p = r_foot_p(1);
+                    else
+                        GRF_stance = GRF_L;
+                        foot_p = l_foot_p(1);
+                    end                      
+                    
+                    
+                    P_feedback_toe = ( com_pos(1) - foot_p);   
+                    obj.P_feedback_toe_fil = YToolkits.first_order_filter(obj.P_feedback_toe_fil,P_feedback_toe,obj.fil_para_3);
+                    
+                    u_stance_toe = 0;
+                    if RadioButton.SDA == -1     
+                        u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil - obj.com_vel_x_fil)*0 ...
+                                       -obj.K_toe_ip_f*(obj.P_feedback_toe_fil - obj.tg_velocity_x_fil*0.1)*0;
+                    else
+                        u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil./0.9 - obj.dhd(st_LA)) ...
+                                       -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.2./0.9 - obj.hd(st_LA));                        
+                        
+                    end    
+                        u(st_toe) =  clamp( u_stance_toe*s_slow,-15,15);                     
+                    
+                    
+                    %  clamp(obj.Kp_toe*sign(-GRF_stance(1))*(GRF_stance(2)/600),-5,5)...
+                     % calculate the toe torque
+%                     P_feedback_toe = ( com_pos(1) - obj.stand_offset- (r_foot_p(1)+l_foot_p(1))/2);
+%                     obj.P_feedback_toe_fil = YToolkits.first_order_filter(obj.P_feedback_toe_fil,P_feedback_toe,obj.fil_para_3);
+%                     u_toe = - (obj.Kp_toe_stand*obj.P_feedback_toe_fil + obj.Kd_toe_stand*( obj.com_vel_x_fil - 0));
+%                     u([5,10]) = min(s_L,s_R)*u_toe;
+%                     u([5,10]) = YToolkits.clamp(u([5,10]),-15,15);                                   
+                    
                     
                     % Construct Data
                     Data.hd = obj.hd; 
@@ -1133,7 +1207,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 %                 Data.dqaL = dqaL;
 %                 Data.dqjL = dqjL;
 %                 Data.dqsL = dqsL;
-                
+                Data.com_pos_x_fil = obj.com_pos_x_fil;
+                Data.com_pos_y_fil = obj.com_pos_y_fil;
+                Data.com_pos_z_fil = obj.com_pos_z_fil;
+
                
                 Data.hd_original = hd_original;
                 Data.Torque_CP = u_CP;
