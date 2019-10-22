@@ -984,14 +984,27 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     
                     u_stance_toe = 0;
                     if RadioButton.SDA == -1     
-                        u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil - obj.com_vel_x_fil)*0 ...
-                                       -obj.K_toe_ip_f*(obj.P_feedback_toe_fil - obj.tg_velocity_x_fil*0.1)*0;
-                    else
+                        u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil - obj.com_vel_x_fil) ...
+                                       -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.1 - obj.P_feedback_toe_fil);
+                    elseif RadioButton.SDA == 0 
+                        if (abs(obj.dqx_b_fil) < 0.1)  &&  (abs(obj.tg_velocity_x_fil)<0.1)
+                           % stepping in place 
+                           if obj.dqx_b_fil < 0.05
+                              u(st_toe) =  clamp( -obj.K_toe_ip_b*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15); 
+                           else
+                              u(st_toe) =  clamp( -obj.K_toe_ip_f*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15);
+                           end           
+                        else % moving at a different speeds
+                           u(st_toe) =  clamp( -obj.K_toe_ff*(obj.stance_toe_velocity_fil)*s_fast*(1-s_slow),-15,15);  
+                        end        
+                            
+                    else        
                         u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil./0.9 - obj.dhd(st_LA)) ...
-                                       -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.2./0.9 - obj.hd(st_LA));                        
-                        
-                    end    
-                        u(st_toe) =  clamp( u_stance_toe*s_slow,-15,15);                     
+                                       -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.2./0.9 - obj.hd(st_LA));                           
+                    end
+                    
+                    
+                    u(st_toe) =  clamp( u_stance_toe*s_slow,-15,15);
                     
                     
                     %  clamp(obj.Kp_toe*sign(-GRF_stance(1))*(GRF_stance(2)/600),-5,5)...
