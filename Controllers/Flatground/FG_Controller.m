@@ -131,6 +131,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         Kp = zeros(10,1);
         Kd = zeros(10,1);
         stanceLeg = 1;
+        GL_stanceLeg = 1;
         begin = 0;
         Switch = 0; % if switching stance leg
         walking_ini = 0;
@@ -498,30 +499,36 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                              
                 
                 %% Zhenyu
-                if obj.s_prev >= 0.8 % the delay in the gait library block will create additonal oscillations if this is not updating early enough.
-                    obj.hd_last  = obj.hd; % save the desired output at the end of a step. It is used to reset the first 2 bezier coefficient in next step to smooth the torque.
-                    obj.dhd_last = obj.dhd;  
-                end    
+%                 if obj.s_prev >= 0.8 % the delay in the gait library block will create additonal oscillations if this is not updating early enough.
+%                     obj.hd_last  = obj.hd; % save the desired output at the end of a step. It is used to reset the first 2 bezier coefficient in next step to smooth the torque.
+%                     obj.dhd_last = obj.dhd;  
+%                 end    
                 %%
                 
                 % || obj.walking_ini == 0
                 % what happens when a step end and a new step begin.
                 if (obj.s_prev >=0.5 && swing_grf >obj.stance_thre_ub && obj.task == 1) || ...
-                   (obj.s_unsat_prev > obj.force_step_end_s && obj.task == 1) || ...
-                   (obj.walking_ini == 0 && obj.task_next == 1) % initial step
+                        (obj.s_unsat_prev > obj.force_step_end_s && obj.task == 1) || ...
+                        (obj.walking_ini == 0 && obj.task_next == 1) % initial step
+                    obj.hd_last  = obj.hd;
+                    obj.dhd_last = obj.dhd;
+                    obj.GL_stanceLeg = -obj.stanceLeg;
+                end
+                
+                % what happens when a step end and a new step begin.
+                if gaitparams.GL_stanceLeg ~= obj.stanceLeg
                     
-               
-                qall_withoutyaw = qall;
-                qall_withoutyaw(4) = 0;
-                feetDistance = abs(RightToeBottomBack(qall_withoutyaw) - LeftToeBottomBack(qall_withoutyaw));
-                obj.step_height = feetDistance(3); % current set it to be positive; however, based on which leg 
-                % is switched to we should figure out the correct direction. 
-               
-               
+                    qall_withoutyaw = qall;
+                    qall_withoutyaw(4) = 0;
+                    feetDistance = abs(RightToeBottomBack(qall_withoutyaw) - LeftToeBottomBack(qall_withoutyaw));
+                    obj.step_height = feetDistance(3); % current set it to be positive; however, based on which leg
+                    % is switched to we should figure out the correct direction.
+                    
+                    
                     if obj.walking_ini == 1 % when a step is finished during walking
                         obj.stanceLeg = - obj.stanceLeg;
                     else % initial step when the walking switch is triggered
-                        obj.stanceLeg = +1; % At the beginning of a step. 
+                        obj.stanceLeg = +1; % At the beginning of a step.
                         % StanceLeg is always left leg, this value will be
                         % set to -1 at the beginning of the first step
                         % since walking_ini == 1.
@@ -948,7 +955,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
              
 
                     
-                    obj.stance_toe_velocity_fil = YToolkits.first_order_filter(obj.stance_toe_velocity_fil,obj.dh0(st_toe),obj.fil_para_3);
+%                     obj.stance_toe_velocity_fil = YToolkits.first_order_filter(obj.stance_toe_velocity_fil,obj.dh0(st_toe),obj.fil_para_3);
                      
                     % stance toe control
 %                     if (abs(obj.dqx_b_fil) < 0.1)  &&  (abs(obj.tg_velocity_x_fil)<0.1)
@@ -969,51 +976,45 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
 %                     u([5,10]) = YToolkits.clamp(u([5,10]),-15,15);
 
                          
-                    % toe compenstation based on the current GRF                 
-                    if obj.stanceLeg == +1 
-                        GRF_stance = GRF_R;
-                        foot_p = r_foot_p(1);
-                    else
-                        GRF_stance = GRF_L;
-                        foot_p = l_foot_p(1);
-                    end                      
-                    
-                    
-                    P_feedback_toe = ( com_pos(1) - foot_p);   
-                    obj.P_feedback_toe_fil = YToolkits.first_order_filter(obj.P_feedback_toe_fil,P_feedback_toe,obj.fil_para_3);
-                    
-                    u_stance_toe = 0;
-                    if RadioButton.SDA == -1     
-                        u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil - obj.com_vel_x_fil) ...
-                                       -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.1 - obj.P_feedback_toe_fil);
-                    elseif RadioButton.SDA == 0 
-                        if (abs(obj.dqx_b_fil) < 0.1)  &&  (abs(obj.tg_velocity_x_fil)<0.1)
-                           % stepping in place 
-                           if obj.dqx_b_fil < 0.05
-                              u(st_toe) =  clamp( -obj.K_toe_ip_b*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15); 
-                           else
-                              u(st_toe) =  clamp( -obj.K_toe_ip_f*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15);
-                           end           
-                        else % moving at a different speeds
-                           u(st_toe) =  clamp( -obj.K_toe_ff*(obj.stance_toe_velocity_fil)*s_fast*(1-s_slow),-15,15);  
-                        end        
-                            
-                    else        
-                        u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil./0.9 - obj.dhd(st_LA)) ...
-                                       -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.2./0.9 - obj.hd(st_LA));                           
-                    end
-                    
-                    
-                    u(st_toe) =  clamp( u_stance_toe*s_slow,-15,15);
-                    
-                    
-                    %  clamp(obj.Kp_toe*sign(-GRF_stance(1))*(GRF_stance(2)/600),-5,5)...
-                     % calculate the toe torque
-%                     P_feedback_toe = ( com_pos(1) - obj.stand_offset- (r_foot_p(1)+l_foot_p(1))/2);
+%                     % toe compenstation based on the current GRF                 
+%                     if obj.stanceLeg == +1 
+%                         GRF_stance = GRF_R;
+%                         foot_p = r_foot_p(1);
+%                     else
+%                         GRF_stance = GRF_L;
+%                         foot_p = l_foot_p(1);
+%                     end                      
+%                     
+%                     
+%                     P_feedback_toe = ( com_pos(1) - foot_p);   
 %                     obj.P_feedback_toe_fil = YToolkits.first_order_filter(obj.P_feedback_toe_fil,P_feedback_toe,obj.fil_para_3);
-%                     u_toe = - (obj.Kp_toe_stand*obj.P_feedback_toe_fil + obj.Kd_toe_stand*( obj.com_vel_x_fil - 0));
-%                     u([5,10]) = min(s_L,s_R)*u_toe;
-%                     u([5,10]) = YToolkits.clamp(u([5,10]),-15,15);                                   
+%                     
+%                     u_stance_toe = 0;
+%                     if RadioButton.SDA == -1     
+%                         u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil - obj.com_vel_x_fil) ...
+%                                        -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.1 - obj.P_feedback_toe_fil);
+%                     elseif RadioButton.SDA == 0 
+%                         if (abs(obj.dqx_b_fil) < 0.1)  &&  (abs(obj.tg_velocity_x_fil)<0.1)
+%                            % stepping in place 
+%                            if obj.dqx_b_fil < 0.05
+%                               u(st_toe) =  clamp( -obj.K_toe_ip_b*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15); 
+%                            else
+%                               u(st_toe) =  clamp( -obj.K_toe_ip_f*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15);
+%                            end           
+%                         else % moving at a different speeds
+%                            u(st_toe) =  clamp( -obj.K_toe_ff*(obj.stance_toe_velocity_fil)*s_fast*(1-s_slow),-15,15);  
+%                         end        
+%                             
+%                     else        
+%                         u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil./0.9 - obj.dhd(st_LA)) ...
+%                                        -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.2./0.9 - obj.hd(st_LA));                           
+%                     end
+%                     
+%                     
+%                     u(st_toe) =  clamp( u_stance_toe*s_slow,-15,15);
+                    
+                    
+                            
                     
                     
                     % Construct Data
@@ -1243,7 +1244,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 
 
-                GaitLibraryInputs(1) = obj.stanceLeg;
+                GaitLibraryInputs(1) = obj.GL_stanceLeg;
                 if RadioButton.SGA == +1 % use EKF data
                     GaitLibraryInputs(2) = BI_Vel(1);
                     GaitLibraryInputs(3) = BI_Vel(2);

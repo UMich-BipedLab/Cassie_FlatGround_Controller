@@ -30,7 +30,7 @@
             
 %             gaitLibraryInputs = zeros(26,1);
             gaitparams = PreFunctions.Construct_GLData;
-            stanceLeg     = gaitLibraryInputs(1);
+            GL_stanceLeg     = gaitLibraryInputs(1);
             cur_speed_x   = gaitLibraryInputs(2);
             cur_speed_y   = gaitLibraryInputs(3);
             tg_velocity_x = gaitLibraryInputs(4);
@@ -40,7 +40,7 @@
             dhd_last      = gaitLibraryInputs(17:end);
             
             
-            if stanceLeg == 1 % right stance
+            if GL_stanceLeg == 1 % right stance
                LT_2D = GaitLibrary_2D.LT_2D_Right; % size(21,31,15,2);
             else
                LT_2D = GaitLibrary_2D.LT_2D_Left; % size(21,31,15,2); 
@@ -75,7 +75,7 @@
             ct_R = 1/0.4;
             ct_L = 1/0.4;
             
-            if stanceLeg == 1
+            if GL_stanceLeg == 1
                 HAlpha_R = GaitLibrary_2D.RightStance.HAlpha;
                 HAlpha_R_dx = interp1(dxr,HAlpha_R,Vsp_x); % 31x14x10x6
                 HAlpha_R_dx = squeeze(HAlpha_R_dx); %
@@ -100,6 +100,7 @@
             
             gaitparams.Vsp_x = des_Vsp_x;
             gaitparams.Vsp_y = des_Vsp_y;
+            gaitparams.GL_stanceLeg = GL_stanceLeg;
         end
 
         function resetImpl(obj)
