@@ -1,5 +1,18 @@
 function Data = Construct_Data()
+% feedforward
+Data.q_r = zeros(20,1);
+Data.dq_r =zeros(20,1);
+Data.ddq_r =zeros(20,1);
+Data.q_0 = zeros(20,1);
+Data.dq_0 = zeros(20,1);
+Data.q_y = zeros(20,1);
+Data.dq_y = zeros(20,1);
 
+Data.controller_GRF = zeros(5,1);
+Data.Fe = zeros(31,1);
+Data.Fs = zeros(4,1);
+Data.Fs_dz = zeros(4,1);
+Data.Fs_fil = zeros(4,1);
 
 % walking
 Data.hd = zeros(10,1);

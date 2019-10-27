@@ -2,24 +2,24 @@
 % Time = '16-8';
 % load([root_dir,'/ExpLog/',Date,'/',Time,'/','Log']) 
 
-figure(1)
-plot(log.Data.t,log.Data.hd)
-hold on
-plot(log.Data.t,log.Data.h0)
-hold off
-lg = legend('hd_1','hd_2','hd_3','hd_4','hd_5','hd_6','hd_7','hd_8','hd_9','hd_10','h0_1','h0_2','h0_3','h0_4','h0_5','h0_6','h0_7','h0_8','h0_9','h0_10')
-set(lg,'visible','off');
-plotbrowser('on')
-
-
-figure(2)
-plot(log.Data.t,log.Data.dhd)
-hold on
-plot(log.Data.t,log.Data.dh0)
-hold off
-lg = legend('dhd_1','dhd_2','dhd_3','dhd_4','dhd_5','dhd_6','dhd_7','dhd_8','dhd_9','dhd_10','dh0_1','dh0_2','dh0_3','dh0_4','dh0_5','dh0_6','dh0_7','dh0_8','dh0_9','dh0_10')
-set(lg,'visible','off');
-plotbrowser('on')
+% figure(1)
+% plot(log.Data.t,log.Data.hd)
+% hold on
+% plot(log.Data.t,log.Data.h0)
+% hold off
+% lg = legend('hd_1','hd_2','hd_3','hd_4','hd_5','hd_6','hd_7','hd_8','hd_9','hd_10','h0_1','h0_2','h0_3','h0_4','h0_5','h0_6','h0_7','h0_8','h0_9','h0_10')
+% set(lg,'visible','off');
+% plotbrowser('on')
+% 
+% 
+% figure(2)
+% plot(log.Data.t,log.Data.dhd)
+% hold on
+% plot(log.Data.t,log.Data.dh0)
+% hold off
+% lg = legend('dhd_1','dhd_2','dhd_3','dhd_4','dhd_5','dhd_6','dhd_7','dhd_8','dhd_9','dhd_10','dh0_1','dh0_2','dh0_3','dh0_4','dh0_5','dh0_6','dh0_7','dh0_8','dh0_9','dh0_10')
+% set(lg,'visible','off');
+% plotbrowser('on')
 
 figure(3)
 plot(log.Data.t,log.Data.hd_joint)

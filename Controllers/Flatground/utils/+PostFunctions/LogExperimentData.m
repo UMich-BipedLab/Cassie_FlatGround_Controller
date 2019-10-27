@@ -15,14 +15,15 @@ cd(save_path)
 
 %% copy the dat files from target computer
 % SimulinkRealTime.copyFileToHost(tg, ['CASSIE1.dat'])
-SimulinkRealTime.copyFileToHost(tg, ['DATA4.dat'])
-
+% SimulinkRealTime.copyFileToHost(tg, ['DATA4.dat'])
+SimulinkRealTime.copyFileToHost(tg, ['DATA1.dat'])
 
 %% Parse Data.dat
-DataMatrix1 = SimulinkRealTime.utils.getFileScopeData('DATA1.dat');
-DataMatrix2 = SimulinkRealTime.utils.getFileScopeData('DATA2.dat');
-DataMatrix3 = SimulinkRealTime.utils.getFileScopeData('DATA3.dat');
-DataMatrix.data = [DataMatrix1.data;DataMatrix2.data;DataMatrix3.data];
+% DataMatrix1 = SimulinkRealTime.utils.getFileScopeData('DATA1.dat');
+% DataMatrix2 = SimulinkRealTime.utils.getFileScopeData('DATA2.dat');
+% DataMatrix3 = SimulinkRealTime.utils.getFileScopeData('DATA3.dat');
+% DataMatrix.data = [DataMatrix1.data;DataMatrix2.data;DataMatrix3.data];
+DataMatrix = SimulinkRealTime.utils.getFileScopeData('DATA1.dat');
 
 DataBusSelectorName = 'Data Bus Selector';
 

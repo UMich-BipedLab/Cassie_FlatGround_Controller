@@ -37,6 +37,12 @@ GLData = PreFunctions.Construct_GLData;
 cassieGLDataBusInfo = Simulink.Bus.createObject(GLData);
 cassieGLDataBus = eval(cassieGLDataBusInfo.busName);
 
+%Create DynMatrixLibrary Bus
+DML = load('DynamicMatrixLibrary_v1.mat');
+DynamicMatrixLibrary = DML.DynamicMatrixLibrary;
+cassieDynamicMatrixLibraryBusInfo = Simulink.Bus.createObject(DynamicMatrixLibrary);
+cassieDynamicMatrixLibraryBus = eval(cassieDynamicMatrixLibraryBusInfo.busName);
+
 
 % MocapData = getMocapDataStruct();
 % CassieLinuxDataBusInfo = Simulink.Bus.createObject(MocapData);
