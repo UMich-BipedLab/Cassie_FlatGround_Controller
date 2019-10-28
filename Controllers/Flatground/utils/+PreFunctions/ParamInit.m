@@ -5,6 +5,7 @@ c_Kp_roll = 100;
 c_Kd_roll = 20;
 c_Kp_yaw = 200;
 c_Kd_yaw = 4;
+
 % c_Kp_pitch = 500;
 % c_Kd_pitch = 40;
 % c_Kp_roll = 500;
@@ -16,13 +17,13 @@ c_Kd_yaw = 4;
 %         K_toe_ip_b;
 %         K_toe_ff;
 
-c_K_toe_ip_f = 600; % stepping in place moving forwards
-c_K_toe_ip_b = 80; % stepping in place moving backwards
-c_K_toe_ff = 5; % moving foward
-c_sw_toe_gain = 5;
+c_K_toe_ip_f  = 0; % stepping in place moving forwards
+c_K_toe_ip_b  = 0; % stepping in place moving backwards
+c_K_toe_ff    = 0; % moving foward
+c_sw_toe_gain = 0;
 
-c_Kp_abduction = 600;
-c_Kp_rotation = 800;
+c_Kp_abduction = 200;
+c_Kp_rotation = 200;
 c_Kp_thigh = 500;
 c_Kp_knee = 500;
 c_Kp_toe = 10;

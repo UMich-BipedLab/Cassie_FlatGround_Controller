@@ -873,7 +873,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     obj.hd(sw_abduction) = median([obj.ActuatorLimits(sw_abduction,1) + 0.1,obj.hd(sw_abduction),obj.ActuatorLimits(sw_abduction,2) - 0.1]);
                     
                     % flat the toe ( tilt a little bit)
-                    obj.hd(sw_toe)  = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50) - qpitch*s_slow; % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
+                    obj.hd(sw_toe)  = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50) + qpitch*s_slow; % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
                     obj.hd(sw_toe)  =   obj.hd(sw_toe) +  obj.toe_tilt_angle; %s_fast*clamp( obj.sw_toe_gain,  -obj.toe_tilt_angle,  obj.toe_tilt_angle);
                     obj.dhd(sw_toe) = 0;
                     obj.hd(st_toe)  = obj.h0(st_toe);
@@ -1007,29 +1007,23 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     %                     P_feedback_toe = ( com_pos(1) - foot_p);
                     %                     obj.P_feedback_toe_fil = YToolkits.first_order_filter(obj.P_feedback_toe_fil,P_feedback_toe,obj.fil_para_3);
                     %
-                    %                     u_stance_toe = 0;
-                    %                     if RadioButton.SDA == -1
-                    %                         u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil - obj.com_vel_x_fil) ...
-                    %                                        -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.1 - obj.P_feedback_toe_fil);
-                    %                     elseif RadioButton.SDA == 0
-                    %                         if (abs(obj.dqx_b_fil) < 0.1)  &&  (abs(obj.tg_velocity_x_fil)<0.1)
-                    %                            % stepping in place
-                    %                            if obj.dqx_b_fil < 0.05
-                    %                               u(st_toe) =  clamp( -obj.K_toe_ip_b*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15);
-                    %                            else
-                    %                               u(st_toe) =  clamp( -obj.K_toe_ip_f*(obj.dqx_b_fil-obj.tg_velocity_x_fil)*s_fast*(1-s_slow),-15,15);
-                    %                            end
-                    %                         else % moving at a different speeds
-                    %                            u(st_toe) =  clamp( -obj.K_toe_ff*(obj.stance_toe_velocity_fil)*s_fast*(1-s_slow),-15,15);
-                    %                         end
-                    %
-                    %                     else
-                    %                         u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil./0.9 - obj.dhd(st_LA)) ...
-                    %                                        -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.2./0.9 - obj.hd(st_LA));
-                    %                     end
-                    %
-                    %
-                    %                     u(st_toe) =  clamp( u_stance_toe*s_slow,-15,15);
+                                        u_stance_toe = 0;
+                                        if RadioButton.SDA == -1
+                                            u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil - obj.com_vel_x_fil) ...
+                                                           -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.1 - obj.P_feedback_toe_fil);
+                                        elseif RadioButton.SDA == 0
+                                            if (abs(obj.dqx_b_fil) < 0.1)  &&  (abs(obj.tg_velocity_x_fil)<0.1)
+                                               % stepping in place
+                                               u_stance_toe =  -obj.K_toe_ip_b*(obj.dqx_b_fil-obj.tg_velocity_x_fil);
+                                            else % moving at a different speeds
+                                               u_stance_toe =  -obj.K_toe_ff*(obj.dqx_b_fil-obj.tg_velocity_x_fil);
+                                            end
+                    
+                                        else % SDA == +1
+                                            u_stance_toe = -obj.K_toe_ip_b*(obj.tg_velocity_x_fil./0.9 - obj.dh0(st_LA)) ...
+                                                           -obj.K_toe_ip_f*(obj.tg_velocity_x_fil*0.2./0.9 - obj.h0(st_LA));
+                                        end
+                                        u(st_toe) =  clamp( u_stance_toe*s_slow*(1-s_slow),-15,15 );
                     
                     
                     %% Try Feedforward
