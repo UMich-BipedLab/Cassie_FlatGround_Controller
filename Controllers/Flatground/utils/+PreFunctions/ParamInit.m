@@ -124,10 +124,12 @@ c_Gamma_sw_knee = 150*0.01;
 c_com_bp = 0.25;
 c_sagittal_speed = 0;
 
+c_torque_switch_phase = 0.1;
+
 
 
 %% Run only when new tunable parameter is created
-if 0
+if 1
     S = whos('c_*');
     root_block = 'FG_RealTime';
     FG_RealTime;

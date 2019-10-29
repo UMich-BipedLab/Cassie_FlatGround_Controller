@@ -108,6 +108,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         K_toe_ff;
         sw_toe_gain;
         
+        torque_switch_phase;
+        
     end
     % PROTECTED PROPERTIES ====================================================
     properties (Access = protected)
@@ -1044,6 +1046,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         u(motor_index) = u8;
                         %                         Fe = Me^-1*(-He+Be*u8);
                         %                         u(4) = u(4) - 15*dqall(11);
+                        s_torque = median([0,1,1/obj.torque_switch_phase*s]);
+                        u = obj.u_last*(1-s_torque)+u*s_torque;
                     end
                     
                     % Construct for feedforward
