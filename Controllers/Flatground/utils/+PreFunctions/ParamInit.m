@@ -71,11 +71,11 @@ c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 % 
 % c_Kfl_p = 0.55;
 % c_Kfl_d = 0.85;
-c_Kfs_p = 0;
-c_Kfs_d = 0;
+c_Kfs_p = 0.1;
+c_Kfs_d = 0.2;
 
-c_Kfl_p = 0;
-c_Kfl_d = 0;
+c_Kfl_p = 0.4;
+c_Kfl_d = 0.7;
 
 c_fil_vel_offset  = 0;
 
@@ -127,7 +127,8 @@ c_sagittal_speed = 0;
 c_torque_switch_phase = 0.1;
 
 
-
+c_GLxIND = 11;
+c_GLyIND = 0;
 %% Run only when new tunable parameter is created
 if 1
     S = whos('c_*');

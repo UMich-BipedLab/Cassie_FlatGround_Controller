@@ -77,29 +77,31 @@
             
             if GL_stanceLeg == 1
                 HAlpha_R = GaitLibrary_2D.RightStance.HAlpha;
-                HAlpha_R_dx = interp1(dxr,HAlpha_R,Vsp_x); % 31x14x10x6
-                HAlpha_R_dx = squeeze(HAlpha_R_dx); %
-                HAlpha_R_dx_dy = interp1(dyr,HAlpha_R_dx,Vsp_y); % 31x14x10x6
-                HAlpha_R_Cur = squeeze(HAlpha_R_dx_dy); %
-                gaitparams.HAlpha = HAlpha_R_Cur;
+%                 HAlpha_R_dx = interp1(dxr,HAlpha_R,Vsp_x); % 31x14x10x6
+%                 HAlpha_R_dx = squeeze(HAlpha_R_dx); %
+%                 HAlpha_R_dx_dy = interp1(dyr,HAlpha_R_dx,Vsp_y); % 31x14x10x6
+%                 HAlpha_R_Cur = squeeze(HAlpha_R_dx_dy); %
+%                 gaitparams.HAlpha = HAlpha_R_Cur;
+                gaitparams.HAlpha = HAlpha_R(cur_speed_x,cur_speed_y,:,:);
                 gaitparams.HAlpha(:,1) = hd_last;
 %                 gaitparams.HAlpha(:,2) = hd_last + dhd_last/ct_R/5;
                 gaitparams.ct = ct_R;
             else
                 
                 HAlpha_L = GaitLibrary_2D.LeftStance.HAlpha;
-                HAlpha_L_dx = interp1(dxr,HAlpha_L,Vsp_x); % 31x14x10x6
-                HAlpha_L_dx = squeeze(HAlpha_L_dx); %
-                HAlpha_L_dx_dy = interp1(dyr,HAlpha_L_dx,Vsp_y); % 31x14x10x6
-                HAlpha_L_Cur = squeeze(HAlpha_L_dx_dy); %
-                gaitparams.HAlpha = HAlpha_L_Cur; 
+%                 HAlpha_L_dx = interp1(dxr,HAlpha_L,Vsp_x); % 31x14x10x6
+%                 HAlpha_L_dx = squeeze(HAlpha_L_dx); %
+%                 HAlpha_L_dx_dy = interp1(dyr,HAlpha_L_dx,Vsp_y); % 31x14x10x6
+%                 HAlpha_L_Cur = squeeze(HAlpha_L_dx_dy); %
+%                 gaitparams.HAlpha = HAlpha_L_Cur; 
+                gaitparams.HAlpha = HAlpha_L(cur_speed_x,cur_speed_y,:,:);
                 gaitparams.HAlpha(:,1) = hd_last;
 %                 gaitparams.HAlpha(:,2) = hd_last + dhd_last/ct_L/5;
                 gaitparams.ct = ct_L;
             end       
             
-            gaitparams.Vsp_x = des_Vsp_x;
-            gaitparams.Vsp_y = des_Vsp_y;
+            gaitparams.Vsp_x = 0;%des_Vsp_x;
+            gaitparams.Vsp_y = 0;%des_Vsp_y;
             gaitparams.GL_stanceLeg = GL_stanceLeg;
         end
 
