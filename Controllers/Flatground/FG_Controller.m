@@ -110,9 +110,6 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         
         torque_switch_phase;
         
-        GLxIND;
-        GLyIND;
-        
     end
     % PROTECTED PROPERTIES ====================================================
     properties (Access = protected)
@@ -542,7 +539,91 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     
                     % Copy the data from current step to the previous step;
                     % and reset the current step data structure.
-
+                    if obj.task == 1
+                        %%%%%%%
+                        %=====
+                        % check initialization:
+                        
+                        % These signals can be very noisy, apply zero phase
+                        % filter
+                        
+                        %                         if RadioButton.SFA ~= 1
+                        %                             figure(1)
+                        %                             hold on
+                        %                             % plot(u_CurrentStep_interp(:,4),'r');
+                        %                             plot(obj.Torque_PreviousStep(4,:),'b')
+                        %                         end
+                        
+                        
+                        % corp the data to correct sizes (RadioButton.SFA == 1)
+                        %                         if (obj.kstep ~= 1) && 0
+                        %                             % first step switched from standing & use SF to
+                        %                             % stop updating.
+                        %
+                        %                             % resize the data to a fixed value 1x100
+                        %                             s_interp = linspace(0,obj.s_current_step(obj.kstep-1),100);
+                        %                             err_incr = linspace(0,1e-9,length(obj.s_current_step(1:obj.kstep-1)));
+                        %
+                        %
+                        %
+                        %                             u_CurrentStep_interp = zeros(100,10);
+                        %                             e_CurrentStep_interp  = zeros(100,10);
+                        %                             % Interpolation of the data structure (different channels of data are stored as coloum vectors)
+                        %                             u_CurrentStep_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.Torque_CurrentStep(:,1:obj.kstep-1)', s_interp); % 100x10
+                        %                             e_CurrentStep_interp = interp1(obj.s_current_step(1:obj.kstep-1) + err_incr, obj.Error_CurrentStep(:,1:obj.kstep-1,:)',  s_interp); % 100x10
+                        %
+                        %                             obj.s_previous_step = s_interp;
+                        %                             % This makes sure the filter always has the same input size
+                        %
+                        %                             % Moving-Average Zero Filter
+                        %                             windowSize = 5;
+                        %                             b = (1/windowSize)*ones(1,windowSize);
+                        %                             a = 1;
+                        %
+                        % %                             Torque_PreviousStep_F = zeros(100,10);
+                        % %                             Error_PreviousStep_F  = zeros(100,10);
+                        %
+                        %                             Torque_PreviousStep_F = filtfilt(b, a, u_CurrentStep_interp); % 100x10
+                        %                             Error_PreviousStep_F  = filtfilt(b, a, e_CurrentStep_interp); % 100x10
+                        %                             % The filter will treat each coloum of the data structure as
+                        %                             % a different channel of signals
+                        %
+                        % %                             Torque_PreviousStep_FT = zeros(10,100);
+                        % %                             Error_PreviousStep_FT = zeros(10,100);
+                        %
+                        %                             Torque_PreviousStep_FT = reshape(transpose(Torque_PreviousStep_F),10,100);
+                        %                             Error_PreviousStep_FT = reshape(transpose(Error_PreviousStep_F),10,100);
+                        %                             % Check whether or not the torque and error are
+                        %                             % initilized
+                        %                             if any(obj.Torque_PreviousStep(:))
+                        %                                 obj.Torque_PreviousStep = obj.Torque_PreviousStep*0.6 + Torque_PreviousStep_FT*0.4; % 10x100
+                        %                                 obj.Error_PreviousStep  = obj.Error_PreviousStep*0.6  + Error_PreviousStep_FT*0.4; % 10x100;
+                        %                             else
+                        %                                 obj.Torque_PreviousStep = Torque_PreviousStep_FT; % 10x100
+                        %                                 obj.Error_PreviousStep  = Error_PreviousStep_FT; % 10x100;
+                        %                             end
+                        %
+                        % %                             if t>10
+                        % %                                 figure(1)
+                        % %                                 hold on
+                        % %                                 plot(u_CurrentStep_interp(:,1),'red');
+                        % %                                 plot(obj.Torque_PreviousStep(1,:),'red')
+                        % %                                 plot(obj.Error_PreviousStep(1,:)*obj.Gamma_st_abu,'black');
+                        % %                                 figure(2)
+                        % %                                 hold on
+                        % %                                 plot(u_CurrentStep_interp(:,6),'red');
+                        % %                                 plot(obj.Torque_PreviousStep(6,:),'red')
+                        % %                                 plot(obj.Error_PreviousStep(6,:)*obj.Gamma_sw_abu,'black');
+                        % %                             end
+                        %                         end
+                        %
+                        %                         % clean current step data structure:
+                        %                         obj.s_current_step = linspace(0,1,2000);
+                        %                         obj.Torque_CurrentStep = zeros(10,2000);
+                        %                         obj.Error_CurrentStep  = zeros(10,2000);
+                        %                         obj.kstep = 1;
+                        
+                    end % end of reset walking step for ILC
                     
                     %% state machine updates
                     obj.tp_last = t - obj.t0;
@@ -794,7 +875,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     obj.hd(sw_abduction) = median([obj.ActuatorLimits(sw_abduction,1) + 0.1,obj.hd(sw_abduction),obj.ActuatorLimits(sw_abduction,2) - 0.1]);
                     
                     % flat the toe ( tilt a little bit)
-                    obj.hd(sw_toe)  = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50);% + qpitch*s_slow; % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
+                    obj.hd(sw_toe)  = - obj.h0_joint(sw_thigh) - deg2rad(13) -deg2rad(50) + qpitch*s_slow; % 13 is the angle between tarsus and thihg, 50 is the angle of transforming frame on foot.
                     obj.hd(sw_toe)  =   obj.hd(sw_toe) +  obj.toe_tilt_angle; %s_fast*clamp( obj.sw_toe_gain,  -obj.toe_tilt_angle,  obj.toe_tilt_angle);
                     obj.dhd(sw_toe) = 0;
                     obj.hd(st_toe)  = obj.h0(st_toe);
@@ -1207,14 +1288,13 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 
                 GaitLibraryInputs(1) = obj.GL_stanceLeg;
-
-%                 GaitLibraryInputs(2) = obj.dqx_b_fil;
-%                 GaitLibraryInputs(2) = obj.dqy_b_fil;
-                GaitLibraryInputs(2) = obj.GLxIND;
-                GaitLibraryInputs(3) = obj.GLyIND;                
-                
-
-
+                if RadioButton.SGA == +1 % use EKF data
+                    GaitLibraryInputs(2) = BI_Vel(1);
+                    GaitLibraryInputs(3) = BI_Vel(2);
+                else
+                    GaitLibraryInputs(2) = obj.dqx_b_fil;
+                    GaitLibraryInputs(2) = obj.dqy_b_fil;
+                end
                 GaitLibraryInputs(4) = obj.tg_velocity_x_fil;
                 GaitLibraryInputs(5) = obj.lateral_move_fil;
                 GaitLibraryInputs(6) = s;

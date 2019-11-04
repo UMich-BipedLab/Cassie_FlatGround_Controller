@@ -101,7 +101,7 @@ s          = log.Data.s';
 stanceleg  = log.Data.stanceLeg';
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
-tlb = 260; % time in seconds
+tlb = 3005; % time in seconds
 tup = tlb + 5; % 3383;
 
 tlbInd = find(log.Data.t>tlb);

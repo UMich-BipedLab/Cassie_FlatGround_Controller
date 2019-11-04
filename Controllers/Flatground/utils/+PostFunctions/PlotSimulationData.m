@@ -81,7 +81,7 @@ stanceleg  = reshape(Data.stanceLeg.Data, 1,DataL);
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
 
-tlb = 2;
+tlb = 3;
 tup = 7; %3383;
 
 
@@ -277,7 +277,7 @@ for k = 6:10
    title(['Joint tracking of right ', TitleNames{k-5},' motor']);
    xlabel('Time (sec)');
    ylabel('Angle (rad)');
-   xlim([tlb,tup]);
+      xlim([tlb,tup]);
     
 end    
 %% virtual left
