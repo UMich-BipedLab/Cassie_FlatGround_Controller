@@ -79,7 +79,7 @@ plotbrowser('on')
 % RadioButton.SHA = RadioChannel(16);
 % figure
 % plot(log.Data.t,log.Data.RadioChannel(:,12))
-
+close all
 figure
 hold on
 plot(log.Data.t,log.Data.RadioChannel(:,11)); % knee
@@ -101,7 +101,7 @@ s          = log.Data.s';
 stanceleg  = log.Data.stanceLeg';
 TitleNames = {'Abduction','Yaw','Hip','Knee','Toe'}; 
 
-tlb = 3005; % time in seconds
+tlb = 1000; % time in seconds
 tup = tlb + 5; % 3383;
 
 tlbInd = find(log.Data.t>tlb);
@@ -228,13 +228,13 @@ for k = 1:5
    xlabel('Time (sec)');
    ylabel('Control Signals');
    box on;
-   xlim([tlb,tup]);
+
    grid on;  
    
    
    linkaxes([ax1,ax2,ax3,ax4],'x'); 
    
-   
+   xlim([tlb,tup]);   
 %    print(gcf, '-dpdf', '-painters', [num2str(k),'Push_Test.pdf']); 
 end    
 %% Plot joint torques of 10 continuous steps

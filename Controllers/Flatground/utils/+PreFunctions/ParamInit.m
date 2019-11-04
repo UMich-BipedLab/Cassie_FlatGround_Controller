@@ -71,11 +71,11 @@ c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 % 
 % c_Kfl_p = 0.55;
 % c_Kfl_d = 0.85;
-c_Kfs_p = 0;
-c_Kfs_d = 0;
+c_Kfs_p = 0.05;
+c_Kfs_d = 0.15;
 
-c_Kfl_p = 0;
-c_Kfl_d = 0;
+c_Kfl_p = 0.2;
+c_Kfl_d = 0.3;
 
 c_fil_vel_offset  = 0;
 
@@ -94,7 +94,7 @@ c_final_sw_abduction = 0.15;
 c_final_st_abduction = 0.05;
 c_pre_final_sw_abduction = -0.01;
 
-c_stance_thre_ub = 200;
+c_stance_thre_ub = 225;
 c_stance_thre_lb = 100;
 c_lateral_velocity_weight = 1;
 c_init_lateral_velocity   = 0.02; % Zhenyu: how the abduction motion changes as the speed changes
@@ -102,7 +102,7 @@ c_abduction_inward_gain   = 0.5;
 c_joint_filter_choice     = 1; % Mikhail's filter is 0
 c_standing_switch_time    = 0.40;
 
-c_toe_tilt_angle   = -0.05;  % [rad] ~ 17.2 deg
+c_toe_tilt_angle   = 0.05;  % [rad] ~ 17.2 deg
 c_force_step_end_s = 1;
 
 
@@ -121,7 +121,7 @@ c_Gamma_st_hip  = 50*0.01;
 c_Gamma_sw_hip  = 10*0.01;
 c_Gamma_st_knee = 150;
 c_Gamma_sw_knee = 150*0.01;
-c_com_bp = 0.25;
+c_com_bp = 0.0;
 c_sagittal_speed = 0;
 
 

@@ -58,7 +58,7 @@
             LT_2D_s_y = reshape(LT_2D_s(11,:,2),length(dyr),1);
 
             %%
-            vx_cur = clamp(cur_speed_x,min(LT_2D_s_x),max(LT_2D_s_y));
+            vx_cur = clamp(cur_speed_x,min(LT_2D_s_x),max(LT_2D_s_x));
             vy_cur = clamp(cur_speed_y,min(LT_2D_s_y),max(LT_2D_s_y)); % check this and see if I can use larger boundaries;
 
             Vsp_x  = interp1(LT_2D_s_x,dxr,vx_cur);

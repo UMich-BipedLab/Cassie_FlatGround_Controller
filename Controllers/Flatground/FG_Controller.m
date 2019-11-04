@@ -1289,7 +1289,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                     GaitLibraryInputs(3) = BI_Vel(2);
                 else
                     GaitLibraryInputs(2) = obj.dqx_b_fil;
-                    GaitLibraryInputs(2) = obj.dqy_b_fil;
+                    GaitLibraryInputs(3) = obj.dqy_b_fil;
                 end
                 GaitLibraryInputs(4) = obj.tg_velocity_x_fil;
                 GaitLibraryInputs(5) = obj.lateral_move_fil;
