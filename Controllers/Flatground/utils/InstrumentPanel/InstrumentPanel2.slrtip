@@ -1,13 +1,5 @@
 
   <Object type="Desktop.Xpc.Designer.InstrumentPanel, Desktop.Xpc.Designer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="InstrumentPanel1" children="Controls">
-    <Object type="MW.Instruments.NumericEntry, mwio, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="NumericEntry98" children="Controls">
-      <Property name="BindingSrcPath">/c_torque_switch_phase</Property>
-      <Property name="TargetName">CassieV3</Property>
-      <Property name="BindingSrcType">Parameter</Property>
-      <Property name="Size">100, 23</Property>
-      <Property name="Location">1131, 397</Property>
-      <Property name="Name">NumericEntry98</Property>
-    </Object>
     <Object type="System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" name="Label91" children="Controls">
       <Property name="FlatStyle">System</Property>
       <Property name="Text">forward speed (SEA ==+1)</Property>

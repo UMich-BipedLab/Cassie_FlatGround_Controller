@@ -15,16 +15,15 @@ cd(save_path)
 
 %% copy the dat files from target computer
 % SimulinkRealTime.copyFileToHost(tg, ['CASSIE02.dat'])
-% SimulinkRealTime.copyFileToHost(tg, ['DATA2.dat'])
-% SimulinkRealTime.copyFileToHost(tg, ['DATA3.dat'])
-% SimulinkRealTime.copyFileToHost(tg, ['DATA4.dat'])
-SimulinkRealTime.copyFileToHost(tg, ['DATA1.dat'])
+SimulinkRealTime.copyFileToHost(tg, ['DATA2.dat'])
+SimulinkRealTime.copyFileToHost(tg, ['DATA3.dat'])
+SimulinkRealTime.copyFileToHost(tg, ['DATA4.dat'])
 %% Parse Data.dat
-% DataMatrix1 = SimulinkRealTime.utils.getFileScopeData('DATA1.dat');
-% DataMatrix2 = SimulinkRealTime.utils.getFileScopeData('DATA2.dat');
-% DataMatrix3 = SimulinkRealTime.utils.getFileScopeData('DATA3.dat');
-% DataMatrix.data = [DataMatrix1.data;DataMatrix2.data;DataMatrix3.data];
-DataMatrix = SimulinkRealTime.utils.getFileScopeData('DATA1.dat');
+DataMatrix1 = SimulinkRealTime.utils.getFileScopeData('DATA1.dat');
+DataMatrix2 = SimulinkRealTime.utils.getFileScopeData('DATA2.dat');
+DataMatrix3 = SimulinkRealTime.utils.getFileScopeData('DATA3.dat');
+DataMatrix.data = [DataMatrix1.data;DataMatrix2.data;DataMatrix3.data];
+% DataMatrix = SimulinkRealTime.utils.getFileScopeData('DATA1.dat');
 
 DataBusSelectorName = 'Data Bus Selector';
 
@@ -98,3 +97,15 @@ log.description.Results = user_input{3};
 % save('Log', 'log') 
 save('Log', 'log', '-v7.3')
 % cd(root_dir);
+%%
+% Define intial pelvis state
+pelvisPosition = [0; 0; 1.2];
+pelvisVelocity = [0; 0; 0];
+pelvisRotation = Rotation3d.identity.getValue;
+pelvisAngularVelocity = [0; 0; 0];
+
+% Define initial motor states
+figure;
+motorPositions = testLegIK;
+motorVelocities = zeros(10,1);
+% close(gcf);
