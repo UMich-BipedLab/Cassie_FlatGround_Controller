@@ -30,7 +30,7 @@
             
 %             gaitLibraryInputs = zeros(26,1);
             gaitparams = PreFunctions.Construct_GLData;
-            GL_stanceLeg     = gaitLibraryInputs(1);
+            GL_stanceLeg  = gaitLibraryInputs(1);
             cur_speed_x   = gaitLibraryInputs(2);
             cur_speed_y   = gaitLibraryInputs(3);
             tg_velocity_x = gaitLibraryInputs(4);
@@ -83,7 +83,7 @@
                 HAlpha_R_Cur = squeeze(HAlpha_R_dx_dy); %
                 gaitparams.HAlpha = HAlpha_R_Cur;
                 gaitparams.HAlpha(:,1) = hd_last;
-                gaitparams.HAlpha(:,2) = hd_last + dhd_last/ct_R/5;
+%                 gaitparams.HAlpha(:,2) = hd_last + dhd_last/ct_R/5;
                 gaitparams.ct = ct_R;
             else
                 
@@ -94,7 +94,7 @@
                 HAlpha_L_Cur = squeeze(HAlpha_L_dx_dy); %
                 gaitparams.HAlpha = HAlpha_L_Cur; 
                 gaitparams.HAlpha(:,1) = hd_last;
-                gaitparams.HAlpha(:,2) = hd_last + dhd_last/ct_L/5;
+%                 gaitparams.HAlpha(:,2) = hd_last + dhd_last/ct_L/5;
                 gaitparams.ct = ct_L;
             end       
             

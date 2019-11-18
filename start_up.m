@@ -13,7 +13,7 @@ myCodeFolder = fullfile(projectRoot, 'Build', 'Code');
 removefolder = true;
 if (removefolder == true) && exist(myCacheFolder, 'dir') 
     rmdir(myCacheFolder, 's')
-end
+end 
 
 if (removefolder == true) && exist(myCodeFolder, 'dir') 
     rmdir(myCodeFolder, 's')

@@ -108,6 +108,8 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
         K_toe_ff;
         sw_toe_gain;
         
+        torque_switch_phase;
+        
     end
     % PROTECTED PROPERTIES ====================================================
     properties (Access = protected)
@@ -372,6 +374,31 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 %% get values
                 [qyaw, qpitch, qroll, dqyaw, dqpitch, dqroll] = IMU_to_Euler_v2(cassieOutputs.pelvis.vectorNav.orientation, cassieOutputs.pelvis.vectorNav.angularVelocity);
+                
+                
+                %% Add EKF information to the system
+                % x y z yaw pitch roll
+                % process data from ekf:
+                EKF_yaw   = LinuxData.state.q(4);
+                EKF_pitch = LinuxData.state.q(5);
+                EKF_roll  = LinuxData.state.q(6);
+                
+                EKF_dyaw   = LinuxData.state.dq(4);
+                EKF_dpitch = LinuxData.state.dq(5);
+                EKF_droll  = LinuxData.state.dq(6);
+                
+                % overwrite torso orientation data with EKF 
+                if RadioButton.SGA == +1 % use EKF data
+                   qyaw     = EKF_yaw;
+                   qpitch   = EKF_pitch; 
+                   qroll    = EKF_roll;
+                   dqyaw    = EKF_dyaw; 
+                   dqpitch  = EKF_dpitch; 
+                   dqroll   = EKF_droll;                   
+                end    
+                
+                
+                
                 qa  = CassieModule.getDriveProperty(cassieOutputs,'position');
                 dqa = CassieModule.getDriveProperty(cassieOutputs,'velocity');
                 qj  = CassieModule.getJointProperty(cassieOutputs,'position');
@@ -731,30 +758,18 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 % Get the desire joint values from the gait library. obj, GaitLibrary, phi, T, s
                 
                 % Send this signal to controller directly obj.v_final_avgy
-                
-                %% Add EKF information to the system
-                % x y z yaw pitch roll
-                % process data from ekf:
-                EKF_yaw   = LinuxData.state.q(4);
-                EKF_pitch = LinuxData.state.q(5);
-                EKF_roll  = LinuxData.state.q(6);
-                
-                EKF_dyaw   = LinuxData.state.dq(4);
-                EKF_dpitch = LinuxData.state.dq(5);
-                EKF_droll  = LinuxData.state.dq(6);
-                
-                R = YToolkits.Angles.Quaternion_to_Matrix(cassieOutputs.pelvis.vectorNav.orientation);
-                Rz = YToolkits.Angles.Rz(LinuxData.state.q(4)); % yaw angle
+                  
+                % R  = YToolkits.Angles.Quaternion_to_Matrix(cassieOutputs.pelvis.vectorNav.orientation);
+                R_EKF  = eul2rotm([LinuxData.state.q(4) LinuxData.state.q(5) LinuxData.state.q(6)]);               
+                Rz_EFK = YToolkits.Angles.Rz(LinuxData.state.q(4)); 
+                % yaw angle
                 % torso velocity in the body frame -> world frame -> yaw frame
-                I_Vel =  R * LinuxData.inekf.velocity; % absolute velocity in the inertial frame
-                BI_Vel = Rz' * I_Vel; %
+                I_Vel  = R_EKF * LinuxData.inekf.velocity; % absolute velocity in the inertial frame
+                BI_Vel = Rz_EFK' * I_Vel; %
                 
                 
                 % - obj.lateral_move_fil  - obj.lateral_move_fil
                 %[obj.gaitparams, des_Vsp_x,des_Vsp_y] = ControlPolicy(obj, GaitParams, BI_Vel(1), BI_Vel(2), obj.tg_velocity_x_fil, obj.lateral_move_fil, s);
-                
-                
-                
                 %                 GaitLibraryInputs = [obj.stanceLeg; BI_Vel(1); BI_Vel(2); obj.tg_velocity_x_fil; obj.lateral_move_fil; s; obj.hd_last;obj.dhd_last];
                 %[obj.stanceLeg, BI_Vel(1), BI_Vel(2), obj.tg_velocity_x_fil, obj.lateral_move_fil, s, obj.hd_last', obj.dhd_last']; %[obj.stanceLeg, GaitLibrary_2D, cur_speed_x , cur_speed_y, tg_velocity_x, tg_velocity_y, s]
                 
@@ -766,12 +781,11 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 dqz = s_LR(st_index)*dqz;
                 
                 % rotate the velocity to the torso frame ( YAW only!!!)
-                Rz = YToolkits.Angles.Rz(qyaw);
-                dq_b = Rz'*[dqx;dqy;dqz];
+                Rz    = YToolkits.Angles.Rz(qyaw);
+                dq_b  = Rz'*[dqx;dqy;dqz];
                 dqx_b = dq_b(1);
                 dqy_b = dq_b(2);
                 dqz_b = dq_b(3);
-                
                 
                 dqall_g = [ dqx;  dqy;              dqz;              dqyaw;         dqpitch;            dqroll;
                     dq_abduction_L;	dq_rotation_L;	dq_thigh_L;  dq_thigh_knee_L; dq_knee_shin_L;  dq_shin_tarsus_L; dq_toe_L;
@@ -1044,6 +1058,10 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                         u(motor_index) = u8;
                         %                         Fe = Me^-1*(-He+Be*u8);
                         %                         u(4) = u(4) - 15*dqall(11);
+                        
+                        
+                        s_torque = median([0,1,1/obj.torque_switch_phase*s]);
+                        u = obj.u_last*(1-s_torque)+u*s_torque;
                     end
                     
                     % Construct for feedforward
@@ -1284,7 +1302,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
                 
                 
                 GaitLibraryInputs(1) = obj.GL_stanceLeg;
-                if RadioButton.SGA == +1 % use EKF data
+                if RadioButton.SGA ~= -1 % use EKF data
                     GaitLibraryInputs(2) = BI_Vel(1);
                     GaitLibraryInputs(3) = BI_Vel(2);
                 else
@@ -1525,7 +1543,7 @@ classdef FG_Controller <matlab.System & matlab.system.mixin.Propagates & matlab.
             %RESETIMPL Reset System object states.
         end % resetImpl
         
-        function [name_1, name_2, name_3, name_4, name_5, name_6]  = getInputNamesImpl(~)
+        function [name_1, name_2, name_3, name_4, name_5, name_6, name_7]  = getInputNamesImpl(~)
             %GETINPUTNAMESIMPL Return input port names for System block
             name_1 = 't';
             name_2 = 'cassieOutputs';

@@ -38,6 +38,8 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
 
             RadioButton = RadioChannelToButton(cassieOutputs.pelvis.radio.channel);
 
+
+            
             if t < 1.5
                 RadioButton.SBA = 0;
             end
@@ -50,7 +52,9 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
 %             end
             RadioButton.SCA = -1;  % knee compensation on 
             RadioButton.SDA = -1;  % toe torque control (-1 use com position, or leg angle)
-            RadioButton.SGA = -1; % use EKF data when it is +1
+            
+            RadioButton.SGA = +1; % use EKF data when it is not -1
+            
             RadioButton.LVA = 0;   % walking in place
             
             if t > 2 % switch to walking
@@ -59,7 +63,7 @@ classdef RemoteSpoofer < matlab.System & matlab.system.mixin.Propagates %#codege
             end
             
             if t > 5
-                RadioButton.LVA = 0;%0.03*(t-3);%0.03*(t-3); % forward speed
+                RadioButton.LVA = 0;%0.03*(t-3); % forward speed
                 RadioButton.LHA = 0.0; %0 lateral speed vy
             end    
             

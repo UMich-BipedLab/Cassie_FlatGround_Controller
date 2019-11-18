@@ -1,10 +1,10 @@
 % PD gain on Joints (walk)
 c_Kp_pitch = 200;
 c_Kd_pitch = 20;
-c_Kp_roll = 100;
+c_Kp_roll = 400;
 c_Kd_roll = 20;
 c_Kp_yaw = 200;
-c_Kd_yaw = 4;
+c_Kd_yaw = 10;
 
 % c_Kp_pitch = 500;
 % c_Kd_pitch = 40;
@@ -71,11 +71,12 @@ c_u_knee_cp = +YToolkits.ifelse(isSim,120,120);
 % 
 % c_Kfl_p = 0.55;
 % c_Kfl_d = 0.85;
-c_Kfs_p = 0.05;
-c_Kfs_d = 0.15;
 
-c_Kfl_p = 0.2;
-c_Kfl_d = 0.3;
+c_Kfs_p = 0.10;
+c_Kfs_d = 0.35;
+
+c_Kfl_p = 0.50;
+c_Kfl_d = 0.65;
 
 c_fil_vel_offset  = 0;
 
@@ -124,7 +125,7 @@ c_Gamma_sw_knee = 150*0.01;
 c_com_bp = 0.0;
 c_sagittal_speed = 0;
 
-
+c_torque_switch_phase = 0.15;
 
 %% Run only when new tunable parameter is created
 if 0
